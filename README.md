@@ -1,6 +1,6 @@
 # Groupe de martin_p 974594
 
-## Projet "Chat_Time"
+## Projet "Chat_Mate"
 
 ## Par l'équipe "Chat_Team"
 
