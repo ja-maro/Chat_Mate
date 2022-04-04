@@ -19,4 +19,4 @@ To-do list (Board and issues on our repo GitLab) : https://rendu-git.etna-altern
 
 Notre project schedule network diagram : https://drive.google.com/file/d/1FmSs5JKG_0AhEo9YhcpMp0PRH5FbEAYd/view?usp=sharing
 
-Notre UML (modèle relationnel, méthode MERISE) : À venir ...
+Notre UML (modèle relationnel, méthode MERISE) : https://www.figma.com/file/wZ4jo9HrF8jqRXUiUmREDS/Untitled?node-id=1%3A2836
