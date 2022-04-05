@@ -1,4 +1,17 @@
-// import { Buffer } from "buffer";
+import { argv } from 'node:process';
+require("dotenv").config();
+
+// Get port argument ; if no port given, defaults to 8080
+const defaultPort = Number(process.env.PORT);
+
+let port: number = 0;
+argv.forEach((value, index) => {
+  if (value == "-p") {
+    port = Number(argv[index + 1]);
+  }
+});
+port = (port > 0 ? port: defaultPort)
+
 // I declare my types :
 export interface ServerToClientEvents {
   noArg: () => void;
@@ -29,7 +42,7 @@ const io = new Server<
   ServerToClientEvents,
   // InterServerEvents,
   SocketData
->(8080);
+>(port);
 
 // Pour de futurs fonctionalitées plus compliqués
 // io.on("connection", (socket) => {
