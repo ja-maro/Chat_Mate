@@ -5,7 +5,7 @@ type PromiseResolve<T> = (value?: T | PromiseLike<T>) => void;
 type PromiseReject = (error?: any) => void;
 
 
-// Pbjet config me permettant de récupérer mes identifiants depuis le fichier .env
+// Objet config me permettant de récupérer mes identifiants depuis le fichier .env
 let config = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
