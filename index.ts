@@ -1,8 +1,23 @@
 import { io, Socket } from "socket.io-client";
 import { ServerToClientEvents, ClientToServerEvents } from "./server";
+import { argv } from "process";
+
+// Get port & host argument ; if no port given, defaults to 8080 & localhost
+let host: string = "";
+let port: number = 0;
+argv.forEach((value, index) => {
+  if (value == "-p") {
+    port = Number(argv[index + 1]);
+  } else if (value == "-h") {
+    host = argv[index + 1];
+  }
+});
+host = (host !== "" ? host : "localhost")
+port = (port > 0 ? port: 8080);
+
 // please note that the types are reversed
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-  "http://localhost:8080"
+  "http://" + host + ":" + port
 );
 const plop = "plop";
 socket.emit("hello", plop);
