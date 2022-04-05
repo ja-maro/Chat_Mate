@@ -1,14 +1,15 @@
+// import { Buffer } from "buffer";
 // I declare my types :
 export interface ServerToClientEvents {
   noArg: () => void;
+  msgEmit: (msg: string) => void;
   basicEmit: (a: number, b: string, c: Buffer) => void;
   withAck: (d: string, callback: (e: number) => void) => void;
-  log: (msg: string) => String;
+  log: (msg: string) => any;
 }
 
 export interface ClientToServerEvents {
   hello: (arg: string) => any;
-  // Miaou: () => void;
 }
 
 // interface InterServerEvents {
@@ -50,7 +51,8 @@ io.on("connection", (socket) => {
   socket.on("hello", (arg) => {
     console.log("hello comrade " + arg);
   });
-  // socket.emit("Miaou");
+
+  socket.emit("msgEmit", "===START_CHATING===");
 });
 
 // The ones declared in the InterServerEvents interface are used for inter-server communication (added in socket.io@4.1.0):
