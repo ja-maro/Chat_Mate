@@ -1,5 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { ServerToClientEvents, ClientToServerEvents } from "./server";
+import { colours } from "./colours";
+
 import { argv } from "process";
 require("dotenv").config();
 
@@ -26,9 +28,10 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 const plop = "plop";
 socket.emit("hello", plop);
 
-// socket.on("Miaou", () => {
-//     console.log("I'm a cat");
-//   });
+socket.on("msgEmit", (msg) => {
+  console.log(colours.fg.red, colours.bg.white, msg , colours.reset);
+});
+
 
 // socket.on("noArg", () => {
 //     // ...
