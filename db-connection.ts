@@ -18,12 +18,23 @@ let config = {
 // Je créé une connection
 const connection = mysql.createConnection(config);
 
+// Je récupérer un user
+connection.connect(function(err: any) {
+  if (err) throw err; 
+  console.log("vous êtes co")
+  connection.query("SELECT user.id as 'user', user.user_login as 'login' FROM user ",
+  function (err: any, result: any) {
+    if (err) throw err;
+    console.log(result);
+  });
+});
+
 // Cette fonction me permet de couper ma connection
 connection.closeConnection = () => {
   return new Promise(
     (resolve: PromiseResolve<number>, reject: PromiseReject) => {
       if (connection) {
-        connection.end((err) => {
+        connection.end((err: any) => {
           if (err) reject(err);
           else resolve();
         });
@@ -36,3 +47,8 @@ connection.closeConnection = () => {
 
 // J'exporte connection afin de l'utiliser plus tard (models etc...)
 module.exports = connection;
+
+function result(result: any) {
+  throw new Error("Function not implemented.");
+}
+

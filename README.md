@@ -24,3 +24,12 @@ Notre UML (modèle relationnel, méthode MERISE) : https://www.figma.com/file/wZ
 ### Start the server
 
 npx nodemon index.ts
+
+### Migrate le fichier .sql 
+
+mysql -u root < /workspaces/group-974594/schema.sql
+
+(don't fogert the -p if u have a psw 
+&& put your own path 
+&& nom de la db : ts_server
+&& DB_PORT: 3306)
