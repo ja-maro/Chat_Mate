@@ -1,10 +1,11 @@
 import { io, Socket } from "socket.io-client";
 import { ServerToClientEvents, ClientToServerEvents } from "./server";
 import { argv } from "process";
+require("dotenv").config();
 
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
-const defaultHost = "localhost";
-const defaultPort = 8080;
+const defaultHost = String(process.env.HOST);
+const defaultPort = Number(process.env.PORT);
 
 let host: string = "";
 let port: number = 0;

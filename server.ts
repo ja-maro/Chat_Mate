@@ -1,7 +1,8 @@
 import { argv } from 'node:process';
+require("dotenv").config();
 
 // Get port argument ; if no port given, defaults to 8080
-const defaultPort = 8080;
+const defaultPort = Number(process.env.PORT);
 
 let port: number = 0;
 argv.forEach((value, index) => {
