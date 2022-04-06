@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents } from "./interface";
+import { ServerToClientEvents, ClientToServerEvents } from "./config";
 import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
@@ -58,8 +58,8 @@ function read() {
           break;
         }
         case "--register": {
-          let pwd: string[] = input.split(" ").splice(0, 1);
-          socket.volatile.emit("register", pwd);
+          let userInfos: string[] = input.split(" ").splice(1, 2);
+          socket.volatile.emit("register", userInfos);
           break;
         }
         default: {
