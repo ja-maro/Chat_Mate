@@ -48,47 +48,27 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
   port
 );
 
-//adding login info into sql
-var numUsers = 0;
-socket.on('add user', (username) => {
-  if (addedUser) return;
-  socket.username = username;
-  ++numUsers;
-   console.log(username+'has logged in'+numUsers+' online');
-});
-const userlogin = socket.on('login');
-const userpassword = socket.on('password');
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-  var sql = "INSERT INTO user (user_login, user_password) VALUES (//ici je ne sais pas quoi mettre, on a besoin des infos de sockets))";
-  con.query(sql, function (err, result) {
-    if (err) throw err;
-    console.log("1 record inserted");
-  });
-});
-
 io.on("connection", (socket) => {
   socket.on("chat message", (msg) => {
     console.log("reçu: " + msg);
     socket.broadcast.emit("chat message", msg);
   });
 
-  io.emit('invalid', ()={
-    if (userlogin && password) {
-      const query = "select * from user where user_login = ?";
-      db.query(query, username, (error, result){
-        if (error) {
-          console.log("incorrect credentials");
-        } else {
-          socket.emit("welcome" + userlogin );
-          console.log(result);
-        }
-      })
-    } else {
-      console.log("incorrect credentials");
-    }
-  })
 
-  socket.emit("hello", "===START_CHATING===");
+//adding login info into sql
+socket.on('userpass', (name: string, password: string) =>{
+  var sql = "INSERT INTO user (user_login, user_password) VALUES (${name}, ${password})"
+
+  
+//const userlogin = socket.on('userpass', (name, pass));
+//con.connect(function(err) {
+// if (err) throw err;
+//  console.log("Connected!");
+  
+//  con.query(sql, function (err, result) {
+//    if (err) throw err;
+//    console.log("1 record inserted");
+//  });
 });
+
+  
