@@ -3,6 +3,7 @@ import { ServerToClientEvents, ClientToServerEvents } from "./server";
 import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
+import { documentation } from "./documentation";
 require("dotenv").config();
 
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
@@ -30,14 +31,31 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 // Ici, notre chat-basic
 function read() {
   rl.question("", (input) => {
-    if (input == "exit") {
-      console.log("Bye nerdz !");
-      rl.close();
-      process.exit();
+    if (input[0] && input[1] === "-") {
+      switch (input) {
+        case "--exit": {
+          console.log("Bye nerdz !");
+          rl.close();
+          process.exit();
+        }
+        case "--help": {
+          console.log(
+            colours.fg.green,
+            documentation.intro,
+            documentation.cmds,
+            colours.reset
+          );
+          break;
+        }
+        default: {
+          console.log(colours.fg.green, documentation.error, colours.reset);
+          break;
+        }
+      }
     } else {
       socket.volatile.emit("chat message", input);
-      read();
     }
+    read();
   });
 }
 
@@ -49,4 +67,8 @@ socket.on("hello", function (msg) {
 
 socket.on("chat message", (msg) => {
   console.log(colours.fg.yellow, msg, colours.reset);
+});
+
+socket.on("system message", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
 });
