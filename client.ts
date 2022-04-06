@@ -10,6 +10,13 @@ const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
 const rl = readline.createInterface({ input, output });
 
+rl.question('username: ', function (name: string) {
+  rl.question('password: ', function (pass: string) {
+    socket.emit("userpass", (name), (pass));
+    rl.close();
+  });
+});
+
 let host: string = "";
 let port: number = 0;
 argv.forEach((value, index) => {
@@ -41,12 +48,16 @@ function read() {
   });
 }
 
-read();
+//we take argv2 as username
+//var username = process.argv[2];
 
+read();
 socket.on("hello", function (msg) {
+//  console.log(username +":", msg);
   console.log(colours.fg.red, colours.bg.white, msg, colours.reset);
 });
 
 socket.on("chat message", (msg) => {
+//  console.log(process.argv[2] + ":", colours.fg.yellow, msg, colours.reset);
   console.log(colours.fg.yellow, msg, colours.reset);
 });

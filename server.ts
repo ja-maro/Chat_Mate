@@ -49,6 +49,13 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
 );
 
 //adding login info into sql
+var numUsers = 0;
+socket.on('add user', (username) => {
+  if (addedUser) return;
+  socket.username = username;
+  ++numUsers;
+   console.log(username+'has logged in'+numUsers+' online');
+});
 const userlogin = socket.on('login');
 const userpassword = socket.on('password');
 con.connect(function(err) {
