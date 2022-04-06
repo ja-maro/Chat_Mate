@@ -1,6 +1,17 @@
 import { argv } from "node:process";
+import { resourceLimits } from "node:worker_threads";
 require("dotenv").config();
 import { Server } from "socket.io";
+
+//connecting server to database
+var mysql = require('mysql');
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "ts_server"
+});
+
 
 // Get port argument ; if no port given, defaults to 8080
 const defaultPort = Number(process.env.PORT);
@@ -37,11 +48,40 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
   port
 );
 
+//adding login info into sql
+const userlogin = socket.on('login');
+const userpassword = socket.on('password');
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+  var sql = "INSERT INTO user (user_login, user_password) VALUES (//ici je ne sais pas quoi mettre, on a besoin des infos de sockets))";
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("1 record inserted");
+  });
+});
+
 io.on("connection", (socket) => {
   socket.on("chat message", (msg) => {
     console.log("reçu: " + msg);
     socket.broadcast.emit("chat message", msg);
   });
+
+  io.emit('invalid', ()={
+    if (userlogin && password) {
+      const query = "select * from user where user_login = ?";
+      db.query(query, username, (error, result){
+        if (error) {
+          console.log("incorrect credentials");
+        } else {
+          socket.emit("welcome" + userlogin );
+          console.log(result);
+        }
+      })
+    } else {
+      console.log("incorrect credentials");
+    }
+  })
 
   socket.emit("hello", "===START_CHATING===");
 });
