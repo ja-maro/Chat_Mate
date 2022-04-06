@@ -54,7 +54,6 @@ function read() {
       }
     } else {
       socket.volatile.emit("chat message", input);
-      read();
     }
     read();
   });
