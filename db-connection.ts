@@ -16,14 +16,14 @@ let config = {
 };
 
 // Je créé une connection
-const connection = mysql.createConnection(config);
+export const connection = mysql.createConnection(config);
 
 // Cette fonction me permet de couper ma connection
 connection.closeConnection = () => {
   return new Promise(
     (resolve: PromiseResolve<number>, reject: PromiseReject) => {
       if (connection) {
-        connection.end((err) => {
+        connection.end((err: any) => {
           if (err) reject(err);
           else resolve();
         });
@@ -34,5 +34,3 @@ connection.closeConnection = () => {
   );
 };
 
-// J'exporte connection afin de l'utiliser plus tard (models etc...)
-module.exports = connection;
