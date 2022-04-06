@@ -1,7 +1,6 @@
 import { Server } from "socket.io";
 import { argv } from "node:process";
 
-
 // Get port argument ; if no port given, defaults to 8080
 const defaultPort = Number(process.env.PORT);
 let port: number = 0;
@@ -11,7 +10,6 @@ argv.forEach((value, index) => {
   }
 });
 port = port > 0 ? port : defaultPort;
-
 
 // I declare my types :
 export interface ServerToClientEvents {
@@ -29,12 +27,15 @@ export interface ClientToServerEvents {
   login: (msg: string) => void;
   pwd: (msg: string) => void;
   register: (msg: string[]) => void;
+  create_room: (msg: string) => void;
 }
 
 export interface SocketData {
   id: number;
   login: string;
   password: string;
+  room_id: number;
+  room_name: string;
 }
 
 // I create my server
