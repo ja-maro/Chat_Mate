@@ -69,3 +69,7 @@ socket.on("hello", function (msg) {
 socket.on("chat message", (msg) => {
   console.log(colours.fg.yellow, msg, colours.reset);
 });
+
+socket.on("system message", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
+});
