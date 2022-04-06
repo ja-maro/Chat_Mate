@@ -17,6 +17,7 @@ port = port > 0 ? port : defaultPort;
 export interface ServerToClientEvents {
   noArg: () => void;
   "chat message": (msg: string) => void;
+  "system message": (msg: string) => void;
   hello: (msg: string) => void;
   basicEmit: (a: number, b: string, c: Buffer) => void;
   withAck: (d: string, callback: (e: number) => void) => void;
@@ -36,12 +37,29 @@ interface SocketData {
 const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
   port
 );
+const default_room: string = "#default-room";
 
 io.on("connection", (socket) => {
   socket.on("chat message", (msg) => {
     console.log("reçu: " + msg);
-    socket.broadcast.emit("chat message", msg);
+    socket.to(default_room).emit("chat message", msg);
   });
 
+  //On connection to server
   socket.emit("hello", "===START_CHATING===");
+  socket.join(default_room);
+  socket.to(default_room).emit("system message", 
+    socket.id + " has joined the room.");
+  
+  //Récupère la liste des rooms actuellement sur le serveur
+  let rooms = Array.from(io.of("/").adapter.rooms.keys());
+  let available_rooms: string = "Les rooms disponibles sont :";
+  //On exclut les rooms uniques à chaque socket 
+  // (Penser à utiliser '#' au début du nom des rooms créées !)
+  rooms.forEach(element => {
+    if (element.startsWith("#")) {
+      available_rooms += "\n" + element;
+    }
+  });
+  socket.emit("system message", "Bienvenue sur " + default_room + " !\n" + available_rooms)
 });
