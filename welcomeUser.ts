@@ -11,6 +11,8 @@ export const welcomeUser = (socket: any) => {
 
   // On fait rejoindre la room par defaut à notre user
   socket.join(main_room);
+  socket.data.room_name = main_room;
+  socket.data.room_id = 1;
   socket
     .to(main_room)
     .emit("system message", socket.data.login + " has joined the room.");

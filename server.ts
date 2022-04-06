@@ -1,6 +1,8 @@
 require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
+import { verifyRoom, createRoom } from "./DataAccess/roomData";
+
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -17,7 +19,9 @@ io.on("connection", (socket) => {
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", (msg) => {
     console.log("reçu: " + msg);
-    socket.to(main_room).emit("chat message", socket.data.login + " : " + msg);
+    socket
+      .to(socket.data.room_name)
+      .emit("chat message", socket.data.login + " : " + msg);
   });
 
   //On connection to server
@@ -92,6 +96,53 @@ io.on("connection", (socket) => {
         socket.data.login = userCredentials.user_login;
         socket.data.password = userCredentials.user_password;
         welcomeUser(socket);
+      })
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
+
+  // le user veut créer une room
+  // on vérifie qu'elle n'existe pas déjà dans la bdd
+  // on le laisse rejoindre la room
+  // S'il est seul comme une merde, on le prévient, parce qu'on est cool.
+  //  Sinon on génère la liste des users
+
+  socket.on("create_room", async (input) => {
+    // Si le user n'est pas co, on stop le process
+    if (!socket.data.id) {
+      socket.emit(
+        "system message",
+        "Error : vous devez etre authentifié\t(--login)"
+      );
+      return;
+    }
+    console.log("input de create_room ici : " + input);
+    await verifyRoom(input)
+      .then((results: any) => {
+        console.log("verifyRoom results : " + JSON.stringify(results[0]));
+        if (results[0] == undefined) {
+          // créer room ici en prenant l 'input et le user
+          createRoom(input, socket.data.id)
+            .then((results: any) => {
+              socket
+                .to(socket.data.room_name)
+                .emit(
+                  "system message",
+                  socket.data.login + " a quitté la room"
+                );
+              socket.leave(socket.data.room_name);
+              socket.data.room_id = Number(results.insertId);
+              socket.data.room_name = String(input);
+              console.log("room id : " + socket.data.room_id);
+              socket.join(input);
+              socket.emit(
+                "system message",
+                "Bienvenue sur " + socket.data.room_name + " !\n"
+              );
+            })
+            .catch((err) => console.log("Promise rejection error: " + err));
+        } else {
+          socket.emit("system message", "Cette room existe déjà.\n");
+        }
       })
       .catch((err) => console.log("Promise rejection error: " + err));
   });
