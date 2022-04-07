@@ -9,7 +9,16 @@ require("dotenv").config();
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
 const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
-const rl = readline.createInterface({ input, output });
+//const rl = readline.createInterface({ input, output });
+
+
+//full readline for inputs
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: true
+});
+
 
 let host: string = "";
 let port: number = 0;
