@@ -9,16 +9,35 @@ require("dotenv").config();
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
 const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
-//const rl = readline.createInterface({ input, output });
+const rl = readline.createInterface({ input, output });
 
-
+//to hide password while typing it, we would have to change the way we ask for it, we should 
+//have a rl.question() for password, so the response would have a "hideEchoBack: true", which hides it
+// i still don't know how to integrate this here !!! 
+//
 //full readline for inputs
-var rl = readline.createInterface({
+/*var rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
   terminal: true
 });
-
+//hide pasword -- dont forget npm install readline-sync
+var readlineSync = require('readline-sync');
+// ask for username and wait for user's response.
+rl.question('Username:', function (userName: string) {
+    var passWord = readlineSync.question('password: ', {
+        hideEchoBack: true // `*` (default).
+    });
+    socket.emit("userpass", (userName), (passWord));  
+    console.log(userName + ' password: ' + passWord );
+  rl.close();
+});
+//server.ts =>
+ //username&password
+  socket.on('userpass', (name: string, password: string) =>{
+    console.log(name, password);
+  })
+*/
 
 let host: string = "";
 let port: number = 0;
@@ -76,6 +95,16 @@ function read() {
           socket.volatile.emit("create_room", roomName);
           break;
         }
+        case "--add_friend": {
+          let addFriend: string = input.split(" ")[1];
+          socket.volatile.emit("addFriend", addFriend);
+          break;
+        }
+        /*case "--friendlist": {
+          let roomName: string = input.split(" ")[1];
+          socket.volatile.emit("friendlist:", friendList);
+          break;
+        }*/
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);
           break;

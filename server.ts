@@ -2,6 +2,7 @@ require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
 import { verifyRoom, createRoom } from "./DataAccess/roomData";
+import { welcomeUser } from "./welcomeUser";
 
 import {
   ClientToServerEvents,
@@ -9,29 +10,28 @@ import {
   SocketData,
   io,
 } from "./config";
-import { welcomeUser } from "./welcomeUser";
+
 
 // Variable utilisée pour gérer notre room par défaut
 let main_room = String(process.env.MAIN_ROOM);
 
 // Ici on gère les process une fois connecté sur le serveur
-io.on("connection", (socket) => {
-  // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
+io.on("connection", (socket) => { // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", (msg) => {
     console.log("reçu: " + msg);
     socket
       .to(socket.data.room_name)
       .emit("chat message", socket.data.login + " : " + msg);
   });
-
   //On connection to server
   socket.emit(
     "system message",
     "\n\tBienvenue sur Chat Mate !\n" +
-      "\nTu peux te connecter avec '--login <Login>'\n" +
+      "\nTu peux te connecter avec '--login <Username>'\n" +
       "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
       "Les espaces ne sont pas acceptés.\n"
   );
+
 
   // Process de la commande --login
   socket.on("login", async (input) => {
@@ -87,8 +87,9 @@ io.on("connection", (socket) => {
       );
     }
   });
+  
   // Permet de s'inscrire
-  socket.on("register", async (input) => {
+socket.on("register", async (input) => {
     const userCredentials = { user_login: input[0], user_password: input[1] };
     await register(userCredentials)
       .then((results: any) => {
@@ -99,6 +100,7 @@ io.on("connection", (socket) => {
       })
       .catch((err) => console.log("Promise rejection error: " + err));
   });
+
 
   // le user veut créer une room
   // on vérifie qu'elle n'existe pas déjà dans la bdd
@@ -115,6 +117,7 @@ io.on("connection", (socket) => {
       );
       return;
     }
+
     console.log("input de create_room ici : " + input);
     await verifyRoom(input)
       .then((results: any) => {
@@ -144,6 +147,29 @@ io.on("connection", (socket) => {
           socket.emit("system message", "Cette room existe déjà.\n");
         }
       })
+
+
+
+
+
       .catch((err) => console.log("Promise rejection error: " + err));
   });
+
+  //attach the sockets to the server
+  socket.on("addFriend", async (input) => {
+    const friendCredentials = { user_id: input[0],user_login: input[1]};
+      await register(friendCredentials)
+        .then((results: any) => {
+            socket.data.id = friendCredentials.user_id;
+            socket.data.login = friendCredentials.user_login;
+            welcomeUser(socket);
+          })
+          .catch((err) => console.log("Promise rejection error: " + err));
+      }); 
+  //also for friendlist
+  /*socket.on("friendlist",)
+        
+  
+  .catch((err) => console.log("Promise rejection error: " + err));
+      }); */
 });
