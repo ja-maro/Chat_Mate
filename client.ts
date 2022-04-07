@@ -1,5 +1,9 @@
 import { io, Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents } from "./config";
+import {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  io as ioc,
+} from "./config";
 import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
@@ -9,7 +13,7 @@ require("dotenv").config();
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
 const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
-export const rl = readline.createInterface({ input, output, terminal: true });
+export const rl = readline.createInterface({ input, output, terminal: false });
 
 //to hide password while typing it, we would have to change the way we ask for it, we should
 //have a rl.question() for password, so the response would have a "hideEchoBack: true", which hides it
@@ -39,7 +43,8 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 
 // Ici, notre chat-basic
 export function read() {
-  rl.question(">", (input) => {
+  console.log("read ici");
+  rl.question("", (input) => {
     if (input[0] && input[1] === "-") {
       switch (input.split(" ")[0]) {
         case "--exit": {
@@ -87,7 +92,7 @@ export function read() {
     } else {
       socket.volatile.emit("chat message", input);
     }
-    read();
+    read()
   });
 }
 socket.on("welcome", (msg) => {
@@ -100,7 +105,12 @@ socket.on("hello", function (msg) {
 });
 
 socket.on("chat message", (msg) => {
+  let user_login: string;
+  // socket.on("user_data", (user) => {
+  //   if (user_login != socket.id) {
   console.log(colours.fg.yellow, msg, colours.reset);
+  // }
+  // });
 });
 
 socket.on("system message", (msg) => {

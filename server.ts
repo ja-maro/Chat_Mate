@@ -3,7 +3,7 @@ import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
 import { verifyRoom, createRoom } from "./DataAccess/roomData";
 import { welcomeUser } from "./welcomeUser";
-import { read, rl } from "./client";
+// import { rl } from "./client";
 
 import {
   ClientToServerEvents,
@@ -19,7 +19,12 @@ let main_room = String(process.env.MAIN_ROOM);
 io.on("connection", (socket) => {
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", (msg) => {
+    console.log("Mes rooms ! : ", socket.rooms);
+
     console.log("reçu: " + msg);
+
+    // J'essaye de faire en sorte de ne plus afficher deux fois notre log
+    // socket.emit("user_data", socket.id);
     socket
       .to(socket.data.room_name)
       .emit("chat message", socket.data.login + " : " + msg);

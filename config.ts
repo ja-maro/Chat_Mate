@@ -21,6 +21,7 @@ export interface ServerToClientEvents {
   withAck: (d: string, callback: (e: number) => void) => void;
   close_login: () => void;
   welcome: (msg: string) => void;
+  user_data: (data: string) => void;
 }
 
 export interface ClientToServerEvents {
