@@ -1,5 +1,9 @@
 import { io, Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents } from "./config";
+import {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  io as ioc,
+} from "./config";
 import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
@@ -9,7 +13,16 @@ require("dotenv").config();
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
 const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
-const rl = readline.createInterface({ input, output });
+export const rl = readline.createInterface({ input, output, terminal: false });
+
+//to hide password while typing it, we would have to change the way we ask for it, we should
+//have a rl.question() for password, so the response would have a "hideEchoBack: true", which hides it
+// i still don't know how to integrate this here !!!
+//
+
+//hide pasword -- dont forget npm install readline-sync
+var readlineSync = require("readline-sync");
+// ask for username and wait for user's response.
 
 let host: string = "";
 let port: number = 0;
@@ -29,7 +42,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 );
 
 // Ici, notre chat-basic
-function read() {
+export function read() {
   rl.question("", (input) => {
     if (input[0] && input[1] === "-") {
       switch (input.split(" ")[0]) {
@@ -48,13 +61,11 @@ function read() {
           break;
         }
         case "--login": {
-          let login: string = input.split(" ")[1];
-          socket.volatile.emit("login", login);
-          break;
-        }
-        case "--pwd": {
-          let pwd: string = input.split(" ")[1];
-          socket.volatile.emit("pwd", pwd);
+          var login = readlineSync.question("login: ", {});
+          var passWord = readlineSync.question("password: ", {
+            hideEchoBack: true, // `*` (default).
+          });
+          socket.volatile.emit("login", login.split(" ")[0], passWord);
           break;
         }
         case "--register": {
@@ -67,6 +78,11 @@ function read() {
           socket.volatile.emit("create_room", roomName);
           break;
         }
+        /*case "--friendlist": {
+          let roomName: string = input.split(" ")[1];
+          socket.volatile.emit("friendlist:", friendList);
+          break;
+        }*/
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);
           break;
@@ -75,18 +91,25 @@ function read() {
     } else {
       socket.volatile.emit("chat message", input);
     }
-    read();
+    read()
   });
 }
-
-read();
+socket.on("welcome", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
+  read();
+});
 
 socket.on("hello", function (msg) {
   console.log(colours.fg.red, colours.bg.white, msg, colours.reset);
 });
 
 socket.on("chat message", (msg) => {
+  let user_login: string;
+  // socket.on("user_data", (user) => {
+  //   if (user_login != socket.id) {
   console.log(colours.fg.yellow, msg, colours.reset);
+  // }
+  // });
 });
 
 socket.on("system message", (msg) => {

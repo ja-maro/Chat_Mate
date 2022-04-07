@@ -2,6 +2,8 @@ require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
 import { verifyRoom, createRoom } from "./DataAccess/roomData";
+import { welcomeUser } from "./welcomeUser";
+// import { rl } from "./client";
 
 import {
   ClientToServerEvents,
@@ -9,7 +11,6 @@ import {
   SocketData,
   io,
 } from "./config";
-import { welcomeUser } from "./welcomeUser";
 
 // Variable utilisée pour gérer notre room par défaut
 let main_room = String(process.env.MAIN_ROOM);
@@ -18,26 +19,30 @@ let main_room = String(process.env.MAIN_ROOM);
 io.on("connection", (socket) => {
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", (msg) => {
+    console.log("Mes rooms ! : ", socket.rooms);
+
     console.log("reçu: " + msg);
+
+    // J'essaye de faire en sorte de ne plus afficher deux fois notre log
+    // socket.emit("user_data", socket.id);
     socket
       .to(socket.data.room_name)
       .emit("chat message", socket.data.login + " : " + msg);
   });
-
   //On connection to server
   socket.emit(
-    "system message",
+    "welcome",
     "\n\tBienvenue sur Chat Mate !\n" +
-      "\nTu peux te connecter avec '--login <Login>'\n" +
+      "\nTu peux te connecter avec '--login'\n" +
       "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
       "Les espaces ne sont pas acceptés.\n"
   );
 
   // Process de la commande --login
-  socket.on("login", async (input) => {
-    const login: string = input;
+  socket.on("login", async (input_login, input_pwd) => {
+    const login: string = input_login;
     let data = { id: "", user_login: "", user_password: "" };
-    console.log("input login ici : " + input);
+    console.log("input login ici : " + input_login);
 
     // On vérifie si l'utilisateur est déjà connecté
     let isConnected = false;
@@ -52,6 +57,7 @@ io.on("connection", (socket) => {
     // Si l'user est déjà connecté on stop le process
     if (isConnected) {
       socket.emit("system message", "This user is already logged in");
+      // socket.emit("close_login");
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
@@ -59,34 +65,24 @@ io.on("connection", (socket) => {
           data.id = results[0].id;
           data.user_login = results[0].user_login;
           data.user_password = results[0].user_password;
+          if (input_pwd === data.user_password) {
+            // On stock dans socket data les informations de notre user
+            socket.data.id = data.id;
+            socket.data.login = data.user_login;
+            socket.data.password = data.user_password;
+            welcomeUser(socket);
+          } else {
+            // Si le mot de pass est incorrect on préviens notre user
+            socket.emit(
+              "system message",
+              "C'EST LA PIQUETTE ! T'ES MAUVAIS JACK !"
+            );
+          }
         })
         .catch((err) => console.log("Promise rejection error: " + err));
-
-      // Je check le mot de pass
-      socket.on("pwd", (input) => {
-        if (input === data.user_password) {
-          // On stock dans socket data les informations de notre user
-          socket.data.id = data.id;
-          socket.data.login = data.user_login;
-          socket.data.password = data.user_password;
-
-          welcomeUser(socket);
-        } else {
-          // Si le mot de pass est incorrect on préviens notre user
-          socket.emit(
-            "system message",
-            "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
-          );
-        }
-      });
-
-      // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
-      socket.emit(
-        "system message",
-        "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
-      );
     }
   });
+
   // Permet de s'inscrire
   socket.on("register", async (input) => {
     const userCredentials = { user_login: input[0], user_password: input[1] };
@@ -115,6 +111,7 @@ io.on("connection", (socket) => {
       );
       return;
     }
+
     console.log("input de create_room ici : " + input);
     await verifyRoom(input)
       .then((results: any) => {
@@ -144,6 +141,7 @@ io.on("connection", (socket) => {
           socket.emit("system message", "Cette room existe déjà.\n");
         }
       })
+
       .catch((err) => console.log("Promise rejection error: " + err));
   });
 });
