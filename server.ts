@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
 import { verifyRoom, createRoom } from "./DataAccess/roomData";
 import { welcomeUser } from "./welcomeUser";
+import { read, rl } from "./client";
 
 import {
   ClientToServerEvents,
@@ -25,7 +26,7 @@ io.on("connection", (socket) => {
   });
   //On connection to server
   socket.emit(
-    "system message",
+    "welcome",
     "\n\tBienvenue sur Chat Mate !\n" +
       "\nTu peux te connecter avec '--login'\n" +
       "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
@@ -51,7 +52,7 @@ io.on("connection", (socket) => {
     // Si l'user est déjà connecté on stop le process
     if (isConnected) {
       socket.emit("system message", "This user is already logged in");
-      socket.emit("close_login");
+      // socket.emit("close_login");
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
@@ -69,7 +70,7 @@ io.on("connection", (socket) => {
             // Si le mot de pass est incorrect on préviens notre user
             socket.emit(
               "system message",
-              "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
+              "C'EST LA PIQUETTE ! T'ES MAUVAIS JACK !"
             );
           }
         })

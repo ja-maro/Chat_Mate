@@ -9,7 +9,7 @@ require("dotenv").config();
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
 const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
-const rl = readline.createInterface({ input, output, terminal: true });
+export const rl = readline.createInterface({ input, output, terminal: true });
 
 //to hide password while typing it, we would have to change the way we ask for it, we should
 //have a rl.question() for password, so the response would have a "hideEchoBack: true", which hides it
@@ -38,8 +38,8 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 );
 
 // Ici, notre chat-basic
-function read() {
-  rl.question("", (input) => {
+export function read() {
+  rl.question(">", (input) => {
     if (input[0] && input[1] === "-") {
       switch (input.split(" ")[0]) {
         case "--exit": {
@@ -57,21 +57,11 @@ function read() {
           break;
         }
         case "--login": {
-          // login logic
-          rl.question("Your login : ", function (login: string) {
-            var passWord = readlineSync.question("password: ", {
-              hideEchoBack: true, // `*` (default).
-            });
-            socket.volatile.emit("login", login, passWord);
-            socket.on("close_login", () => {
-              rl.close();
-              console.log("stop process");
-              read();
-            });
-            rl.close();
-
+          var login = readlineSync.question("login: ", {});
+          var passWord = readlineSync.question("password: ", {
+            hideEchoBack: true, // `*` (default).
           });
-          console.log("ici process");
+          socket.volatile.emit("login", login.split(" ")[0], passWord);
           break;
         }
         case "--register": {
@@ -100,8 +90,10 @@ function read() {
     read();
   });
 }
-
-read();
+socket.on("welcome", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
+  read();
+});
 
 socket.on("hello", function (msg) {
   console.log(colours.fg.red, colours.bg.white, msg, colours.reset);
