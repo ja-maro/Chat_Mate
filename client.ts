@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents } from "./server";
+import { ServerToClientEvents, ClientToServerEvents } from "./config";
 import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
@@ -32,7 +32,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 function read() {
   rl.question("", (input) => {
     if (input[0] && input[1] === "-") {
-      switch (input) {
+      switch (input.split(" ")[0]) {
         case "--exit": {
           console.log("Bye nerdz !");
           rl.close();
@@ -45,6 +45,26 @@ function read() {
             documentation.cmds,
             colours.reset
           );
+          break;
+        }
+        case "--login": {
+          let login: string = input.split(" ")[1];
+          socket.volatile.emit("login", login);
+          break;
+        }
+        case "--pwd": {
+          let pwd: string = input.split(" ")[1];
+          socket.volatile.emit("pwd", pwd);
+          break;
+        }
+        case "--register": {
+          let userInfos: string[] = input.split(" ").splice(1, 2);
+          socket.volatile.emit("register", userInfos);
+          break;
+        }
+        case "--create_room": {
+          let roomName: string = input.split(" ")[1];
+          socket.volatile.emit("create_room", roomName);
           break;
         }
         default: {
