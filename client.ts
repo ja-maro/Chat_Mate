@@ -43,7 +43,6 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 
 // Ici, notre chat-basic
 export function read() {
-  console.log("read ici");
   rl.question("", (input) => {
     if (input[0] && input[1] === "-") {
       switch (input.split(" ")[0]) {
