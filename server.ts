@@ -145,5 +145,24 @@ io.on("connection", (socket) => {
         }
       })
       .catch((err) => console.log("Promise rejection error: " + err));
+
+
   });
-});
+
+
+  socket.on("get_all_user", () => {
+    let userList:Array<{login: string}> = [];
+    let connectedUsers = Array.from(io.of("/").adapter.sids.keys());
+    console.log("connectedUsers : ", connectedUsers)
+    connectedUsers.forEach(e => {
+      userList.push(socket.data.login)
+    } )
+
+    console.log(userList)
+  });
+})
+  //recuperre liste socket / parcours ses sockets / recuperer login socket.data.login dans for each / data.login valeur dans login / recupérer valeuer et push à la list if list.push(socket.data.login) / sorteed pour les trier alpha
+  
+
+//lign161 array.from method pour transformer qqc en array, map.key() recupere les keys, array.from.map.key obient tab keys map. 
+//io.of("/") recuperer map sids() io : server 
