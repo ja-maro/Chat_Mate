@@ -110,16 +110,12 @@ io.on("connection", (socket) => {
   // le user veut créer une room
   // on vérifie qu'elle n'existe pas déjà dans la bdd
   // on le laisse rejoindre la room
-  // S'il est seul comme une merde, on le prévient, parce qu'on est cool.
+  // TODO S'il est seul comme une merde, on le prévient, parce qu'on est cool.
   //  Sinon on génère la liste des users
 
   socket.on("create_room", async (input) => {
     // Si le user n'est pas co, on stop le process
-    if (!socket.data.id) {
-      socket.emit(
-        "system message",
-        "Error : vous devez etre authentifié\t(--login)"
-      );
+    if (!checkAuth(socket)) {
       return;
     }
 
@@ -169,10 +165,70 @@ io.on("connection", (socket) => {
   socket.on("get_rooms", async () => {
     await getRooms()
       .then((results: any) => {
-        console.log(typeof results);
-        console.log(results);
         socket.emit("arr", results);
       })
       .catch((err) => console.log("Promise rejection error: " + err));
   });
+
+  //JOIN ROOM
+  /*
+    --On vérifie si la room est en ligne (au moins un user dedans)
+    --Si oui, join (et leave la précédente)
+    Si non, on vérifie si elle existe en db
+      Si oui, join et on récupère les infos (et leave la précédente)
+      Si non, message d'erreur
+    On lui indique la liste des utilisateurs connectés à la room
+      (message spécial si aucun)
+  */
+  socket.on("join_room", async (input) => {
+    let connectedRooms = Array.from(io.of("/").adapter.rooms.keys());
+    console.log("arr connected rooms : ", connectedRooms);
+    console.log("include input ici : ", input);
+    await verifyRoom(input)
+      .then((results: any) => {
+        if (results[0] == undefined) {
+          socket.emit(
+            "system message",
+            "La room n'existe pas. Utilisez '--create_room' ou '--list_room'"
+          );
+        } else {
+          socket.data.room_id = results[0].id;
+          socket
+            .to(socket.data.room_name)
+            .emit("system message", socket.data.login + " a quitté la room");
+          socket.leave(socket.data.room_name);
+          socket.join(input);
+          socket.data.room_name = input;
+          socket.emit("system message", "Bienvenue sur " + input);
+          socket
+            .to(input)
+            .emit(
+              "system message",
+              socket.data.login + " has joined the room."
+            );
+        }
+        socket.data.room_id = results[0].id;
+        console.log("room id ici : ", socket.data.room_id);
+        console.log("infos room : ", results[0].id, results[0].room_name);
+      })
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
 });
+
+/**
+ * Checks if user is authenticated. If not, sends error message.
+ *
+ * @param socket user socket
+ * @returns true if user is authenticated, false if not
+ */
+function checkAuth(socket: any) {
+  if (!socket.data.id) {
+    socket.emit(
+      "system message",
+      "Error : vous devez etre authentifié\t(--login)"
+    );
+    return false;
+  } else {
+    return true;
+  }
+}
