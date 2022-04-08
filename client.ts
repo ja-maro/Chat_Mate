@@ -73,15 +73,13 @@ export function read() {
           break;
         }
         case "--get_all_user": {
-          let getUsers: string = input.split(" ")[1];
-          socket.volatile.emit("get_all_user", getUsers);
+          socket.volatile.emit("get_all_user");
           break;
         }
-        /*case "--friendlist": {
-          let roomName: string = input.split(" ")[1];
-          socket.volatile.emit("friendlist:", friendList);
+        case "--get_rooms": {
+          socket.volatile.emit("get_rooms");
           break;
-        }*/
+        }
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);
           break;
@@ -90,7 +88,7 @@ export function read() {
     } else {
       socket.volatile.emit("chat message", input);
     }
-    read()
+    read();
   });
 }
 socket.on("welcome", (msg) => {
@@ -113,4 +111,35 @@ socket.on("chat message", (msg) => {
 
 socket.on("system message", (msg) => {
   console.log(colours.fg.green, msg, colours.reset);
+});
+socket.on("smarr", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
+});
+
+socket.on("arr", (msg) => {
+  let msgArr: Array<any>;
+  let length: number = 0;
+  msg.forEach((e: any) => {
+    length = length < e.room_name.length ? e.room_name.length : length;
+    // console.log(colours.fg.green, e.room_name, colours.reset);
+  });
+  output.write(" ");
+  for (let i = 0; i < length + 4; i++) {
+    output.write("_");
+  }
+  console.log("");
+  msg.forEach((e: any) => {
+    output.write("|  ");
+    output.write(e.room_name);
+
+    for (let i = 0; i < length - e.room_name.length; i++) {
+      output.write(" ");
+    }
+    output.write("  |\n");
+  });
+  output.write(" ");
+  for (let i = 0; i < length + 4; i++) {
+    output.write("‾");
+  }
+  console.log("");
 });
