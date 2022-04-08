@@ -26,9 +26,7 @@ export function register(credentials: Object) {
   });
 }
 
-
-
-export function add_friend(friend: Object) {
+export function addfriend(friend: Object) {
   const sql = "INSERT INTO Friend_list SET ?;";
   return new Promise(function (resolve, reject) {
     connection.query(sql, [friend], function (err: any, rows: any) {

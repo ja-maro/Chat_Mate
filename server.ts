@@ -144,4 +144,14 @@ io.on("connection", (socket) => {
 
       .catch((err) => console.log("Promise rejection error: " + err));
   });
+  
+  socket.on("addfriend", async (input) => {
+    const friendCredentials = { friend_id: input[0] };
+    await register(friendCredentials)
+      .then((results: any) => {
+        socket.data.id = results.insertId;
+        socket.data.friend_id = friendCredentials.friend_id;
+      })  
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
 });

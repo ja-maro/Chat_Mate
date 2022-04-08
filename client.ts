@@ -78,10 +78,19 @@ export function read() {
           socket.volatile.emit("create_room", roomName);
           break;
         }
+
+        //ajouter un user dans sa friendlist
+        case "--addfriend" : {
+          let friend: string = input.split(" ")[1];
+          socket.volatile.emit("addfriend", friend);
+          break;
+        }
         /*case "--friendlist": {
           let roomName: string = input.split(" ")[1];
           socket.volatile.emit("friendlist:", friendList);
-          break;
+          break;         
+        }
+
         }*/
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);

@@ -31,6 +31,7 @@ export interface ClientToServerEvents {
   pwd: (msg: string) => void;
   register: (msg: string[]) => void;
   create_room: (msg: string) => void;
+  addfriend: (msg: string) => void;
 }
 
 export interface SocketData {
