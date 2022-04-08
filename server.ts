@@ -146,15 +146,36 @@ io.on("connection", (socket) => {
   });
   
   socket.on("addfriend", async (input) => {
-    const friendCredentials = { user_login:  input[0], friend_login: input[1] };
+    const friendCredentials = {friend_login: input[0] };
     await register(friendCredentials)
       .then((results: any) => {
         socket.data.id = results.insertId;
-        socket.data.user_login = friendCredentials.user_login;
         socket.data.friend_login = friendCredentials.friend_login;
       })  
       .catch((err) => console.log("Promise rejection error: " + err));
   });
 
-  socket.on("friendlist", )
+  socket.on("removefriend", async (input) => {
+    const friendCredentials = {friend_login: input[0] };
+    await register(friendCredentials)
+      .then((results: any) => {
+        socket.data.id = results.insertId;
+        socket.data.friend_login = friendCredentials.friend_login;
+      })  
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
+
+  socket.on("friendlist", async (input) => {
+    const friendCredentials = {friend_login: input[0] };
+    await register(friendCredentials)
+      .then((results: any) => {
+        socket.data.id = results.insertId;
+        socket.data.friend_login = friendCredentials.friend_login;
+      })  
+      .catch((err) => console.log("Promise rejection error: " + err));
+
+      //je ne sais pas comment emitter le friendlist qu'on a fait retiré avec const sql dans DataAccess/userData.ts
+      socket.broadcast.to(socket.data.id).emit(friendlist);
+  });
+  }
 });

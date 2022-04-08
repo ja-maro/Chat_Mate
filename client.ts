@@ -80,17 +80,26 @@ export function read() {
         }
 
         //ajouter un user dans sa friendlist
+        //il faut corriger le query sql
         case "--addfriend" : {
           let user_login: string = input.split(" ")[0];
           let friend_login: string = input.split(" ")[1];
-          socket.volatile.emit("addfriend", user_login, friend_login);
+          socket.volatile.emit("addfriend",friend_login);
           break;
         }
         //afficher la liste des amies par à port son login --friendlist <login>
-        //authentication requis pour vérifier si c'est bien le meme login que celui qui la demande
+        //authentication est requis pour vérifier si c'est bien le meme login que celui qui la demande
+        //il faut corriger le query sql
         case "--friendlist": {
           let friendlist: string = input.split(" ")[1];
           socket.volatile.emit("friendlist", friendlist);
+          break;         
+        }
+        //remove a friend from your friend list: 
+        //il faut corriger le query sql
+        case "--removefriend": {
+          let friendlist: string = input.split(" ")[1];
+          socket.volatile.emit("removefriend", friendlist);
           break;         
         }
 
