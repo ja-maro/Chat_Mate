@@ -1,7 +1,7 @@
 require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
-import { verifyRoom, createRoom } from "./DataAccess/roomData";
+import { verifyRoom, createRoom, getRooms } from "./DataAccess/roomData";
 import { welcomeUser } from "./welcomeUser";
 // import { rl } from "./client";
 
@@ -44,7 +44,6 @@ io.on("connection", (socket) => {
     let data = { id: "", user_login: "", user_password: "" };
     console.log("input login ici : " + input);
 
-
     // On vérifie si l'utilisateur est déjà connecté
     let isConnected = false;
     let connectedSockets = Array.from(io.of("/").adapter.sids.keys());
@@ -62,39 +61,38 @@ io.on("connection", (socket) => {
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
-      .then((results: any) => {
-        data.id = results[0].id;
-        data.user_login = results[0].user_login;
-        data.user_password = results[0].user_password;
-      })
-      .catch((err) => console.log("Promise rejection error: " + err));
+        .then((results: any) => {
+          data.id = results[0].id;
+          data.user_login = results[0].user_login;
+          data.user_password = results[0].user_password;
+        })
+        .catch((err) => console.log("Promise rejection error: " + err));
 
-    // Je check le mot de pass
-    socket.on("pwd", (input) => {
-      if (input === data.user_password) {
-        // On stock dans socket data les informations de notre user
-        socket.data.id = data.id;
-        socket.data.login = data.user_login;
-        socket.data.password = data.user_password;
+      // Je check le mot de pass
+      socket.on("pwd", (input) => {
+        if (input === data.user_password) {
+          // On stock dans socket data les informations de notre user
+          socket.data.id = data.id;
+          socket.data.login = data.user_login;
+          socket.data.password = data.user_password;
 
-        welcomeUser(socket);
-      } else {
-        // Si le mot de pass est incorrect on préviens notre user
-        socket.emit(
-          "system message",
-          "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
-        );
-      }
-    });
+          welcomeUser(socket);
+        } else {
+          // Si le mot de pass est incorrect on préviens notre user
+          socket.emit(
+            "system message",
+            "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
+          );
+        }
+      });
 
-    // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
-    socket.emit(
-      "system message",
-      "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
-    );
-  }
-});
-
+      // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
+      socket.emit(
+        "system message",
+        "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
+      );
+    }
+  });
 
   // Permet de s'inscrire
   socket.on("register", async (input) => {
@@ -160,30 +158,21 @@ io.on("connection", (socket) => {
 
   socket.on("get_all_user", async () => {
     const sockets = await io.fetchSockets();
-    let userList:Array<{login: string}> = [];
-    sockets.forEach(e => {
-      userList.push(e.data.login)
-    }) 
-    socket.emit(
-      "system message",
-      "Your connected mates :" + " " + userList
-    );
-    console.log(userList)
+    let userList: Array<{ login: string }> = [];
+    sockets.forEach((e) => {
+      userList.push(e.data.login);
+    });
+    socket.emit("system message", "Your connected mates :" + " " + userList);
+    console.log(userList);
   });
 
   socket.on("get_rooms", async () => {
-    // Convert map into 2D list:
-    // ==> [['4ziBKG9XFS06NdtVAAAH', Set(1)], ['room1', Set(2)], ...]
-    const arr = Array.from(io.sockets.adapter.rooms);
-    console.log("adapter rooms ici : ", arr);
-    // Filter rooms whose name exist in set:
-    // ==> [['room1', Set(2)], ['room2', Set(2)]]
-    const filtered = arr.filter((room) => !room[1].has(room[0]));
-    console.log("filtered : ", filtered);
-    // Return only the room name:
-    // ==> ['room1', 'room2']
-    const res = filtered.map((i) => i[0]);
-    socket.emit("smarr", res);
+    await getRooms()
+      .then((results: any) => {
+        console.log(typeof results);
+        console.log(results);
+        socket.emit("arr", results);
+      })
+      .catch((err) => console.log("Promise rejection error: " + err));
   });
-
 });

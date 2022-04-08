@@ -20,10 +20,12 @@ export interface ServerToClientEvents {
   basicEmit: (a: number, b: string, c: Buffer) => void;
   withAck: (d: string, callback: (e: number) => void) => void;
   smarr: (msg: string[]) => void;
+  arr: (msg: any) => void;
   close_login: () => void;
   welcome: (msg: string) => void;
   user_data: (data: string) => void;
 }
+
 
 export interface ClientToServerEvents {
   hello: (arg: string) => any;

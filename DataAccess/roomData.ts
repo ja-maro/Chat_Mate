@@ -26,3 +26,16 @@ export function createRoom(room_name: string, user_admin_id: number) {
     });
   });
 }
+
+export function getRooms() {
+  const sql = "SELECT * FROM room;";
+  return new Promise(function (resolve, reject) {
+    connection.query(sql, function (err: any, rows: any) {
+      if (rows === undefined) {
+        reject(new Error("Error rows is undefined"));
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
