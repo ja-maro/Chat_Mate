@@ -171,29 +171,4 @@ io.on("connection", (socket) => {
     socket.emit("smarr", res);
   });
 
-  socket.on("get_users_room", async () => {
-    // const arr = Array.from(io.sockets.adapter.rooms);
-    // console.log("adapter rooms ici : ", arr);
-    // // Filter rooms whose name exist in set:
-    // // ==> [['room1', Set(2)], ['room2', Set(2)]]
-    // const filtered = arr.filter((room) => !room[1].has(room[0]));
-    // console.log("filtered : ", filtered);
-
-
-    // const sockets = await io.fetchSockets();
-    // let userList: Array<{ room: Object }>;
-    // console.log("rooms ", io.sockets.adapter.rooms);
-    // console.log("sids ", io.sockets.adapter.sids);
-
-    // sockets.forEach((e) => {
-    //   if (e.data.login != undefined && e.data.room_name != undefined) {
-    //     //   userList.push(e.data.login);
-    //     console.log("userList : ", userList);
-    //     console.log("userList with room : ", userList[0].room);
-    //     userList[0].room = e.data.room_name;
-    //     console.log("userList : ", userList);
-    //   }
-    //   console.log("login : ", e.data.login, " room name : ", e.data.room_name);
-    // });
-  });
 });

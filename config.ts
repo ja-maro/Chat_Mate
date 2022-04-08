@@ -30,7 +30,6 @@ export interface ClientToServerEvents {
   register: (msg: string[]) => void;
   create_room: (msg: string) => void;
   get_all_user: () => void;
-  get_users_room: () => void;
   get_rooms: () => void;
 }
 

@@ -75,10 +75,6 @@ function read() {
           socket.volatile.emit("get_rooms");
           break;
         }
-        case "--get_users_room": {
-          socket.volatile.emit("get_users_room");
-          break;
-        }
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);
           break;
