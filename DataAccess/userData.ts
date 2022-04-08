@@ -26,6 +26,40 @@ export function register(credentials: Object) {
   });
 }
 
+
+
+
+// export function getAllUsers(users: string) {
+//   const sql = "SELECT user_login FROM user WHERE user_login = user.user_login";
+//   return new Promise(function (resolve, reject) {
+//     connection.query(sql, [users], function (err: any, rows: any) {
+//       if (rows === undefined) {
+//         reject(new Error("Error rows is undefined"));
+//       } else {
+//         resolve(rows);
+//       }
+//     });
+//   });
+// }
+export function add_friend(friend: Object) {
+  const sql = "INSERT INTO Friend_list SET ?;";
+  return new Promise(function (resolve, reject) {
+    connection.query(sql, [friend], function (err: any, rows: any) {
+      if (rows === undefined) {
+        reject(new Error("Error rows is undefined"));
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+
+
+
+
+
+
 // export function register(user: any) {
 //   const sql = "INSERT INTO user SET ?";
 //   return connection.promise().query(sql, [user]);

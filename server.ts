@@ -1,7 +1,9 @@
 require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
-import { verifyRoom, createRoom } from "./DataAccess/roomData";
+import { verifyRoom, createRoom, getRooms } from "./DataAccess/roomData";
+import { welcomeUser } from "./welcomeUser";
+// import { rl } from "./client";
 
 import {
   ClientToServerEvents,
@@ -9,7 +11,6 @@ import {
   SocketData,
   io,
 } from "./config";
-import { welcomeUser } from "./welcomeUser";
 
 // Variable utilisée pour gérer notre room par défaut
 let main_room = String(process.env.MAIN_ROOM);
@@ -18,17 +19,21 @@ let main_room = String(process.env.MAIN_ROOM);
 io.on("connection", (socket) => {
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", (msg) => {
+    console.log("Mes rooms ! : ", socket.rooms);
+
     console.log("reçu: " + msg);
+
+    // J'essaye de faire en sorte de ne plus afficher deux fois notre log
+    // socket.emit("user_data", socket.id);
     socket
       .to(socket.data.room_name)
       .emit("chat message", socket.data.login + " : " + msg);
   });
-
   //On connection to server
   socket.emit(
-    "system message",
+    "welcome",
     "\n\tBienvenue sur Chat Mate !\n" +
-      "\nTu peux te connecter avec '--login <Login>'\n" +
+      "\nTu peux te connecter avec '--login' <login>\n" +
       "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
       "Les espaces ne sont pas acceptés.\n"
   );
@@ -52,6 +57,7 @@ io.on("connection", (socket) => {
     // Si l'user est déjà connecté on stop le process
     if (isConnected) {
       socket.emit("system message", "This user is already logged in");
+      // socket.emit("close_login");
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
@@ -87,6 +93,7 @@ io.on("connection", (socket) => {
       );
     }
   });
+
   // Permet de s'inscrire
   socket.on("register", async (input) => {
     const userCredentials = { user_login: input[0], user_password: input[1] };
@@ -111,6 +118,7 @@ io.on("connection", (socket) => {
     if (!checkAuth(socket)) {
       return;
     }
+
     console.log("input de create_room ici : " + input);
     await verifyRoom(input)
       .then((results: any) => {
@@ -139,6 +147,25 @@ io.on("connection", (socket) => {
         } else {
           socket.emit("system message", "Cette room existe déjà.\n");
         }
+      })
+
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
+
+  socket.on("get_all_user", async () => {
+    const sockets = await io.fetchSockets();
+    let userList: Array<{ login: string }> = [];
+    sockets.forEach((e) => {
+      userList.push(e.data.login);
+    });
+    socket.emit("system message", "Your connected mates :" + " " + userList);
+    console.log(userList);
+  });
+
+  socket.on("get_rooms", async () => {
+    await getRooms()
+      .then((results: any) => {
+        socket.emit("arr", results);
       })
       .catch((err) => console.log("Promise rejection error: " + err));
   });
