@@ -1,5 +1,9 @@
 import { io, Socket } from "socket.io-client";
-import { ServerToClientEvents, ClientToServerEvents } from "./config";
+import {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  io as ioc,
+} from "./config";
 import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
@@ -9,7 +13,7 @@ require("dotenv").config();
 // Get port & host argument ; if no port given, defaults to 8080 & localhost
 const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
-const rl = readline.createInterface({ input, output });
+export const rl = readline.createInterface({ input, output, terminal: false });
 
 let host: string = "";
 let port: number = 0;
@@ -29,7 +33,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 );
 
 // Ici, notre chat-basic
-function read() {
+export function read() {
   rl.question("", (input) => {
     if (input[0] && input[1] === "-") {
       switch (input.split(" ")[0]) {
@@ -57,6 +61,7 @@ function read() {
           socket.volatile.emit("pwd", pwd);
           break;
         }
+
         case "--register": {
           let userInfos: string[] = input.split(" ").splice(1, 2);
           socket.volatile.emit("register", userInfos);
@@ -83,18 +88,25 @@ function read() {
     } else {
       socket.volatile.emit("chat message", input);
     }
-    read();
+    read()
   });
 }
-
-read();
+socket.on("welcome", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
+  read();
+});
 
 socket.on("hello", function (msg) {
   console.log(colours.fg.red, colours.bg.white, msg, colours.reset);
 });
 
 socket.on("chat message", (msg) => {
+  let user_login: string;
+  // socket.on("user_data", (user) => {
+  //   if (user_login != socket.id) {
   console.log(colours.fg.yellow, msg, colours.reset);
+  // }
+  // });
 });
 
 socket.on("system message", (msg) => {

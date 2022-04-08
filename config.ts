@@ -20,12 +20,15 @@ export interface ServerToClientEvents {
   basicEmit: (a: number, b: string, c: Buffer) => void;
   withAck: (d: string, callback: (e: number) => void) => void;
   smarr: (msg: string[]) => void;
+  close_login: () => void;
+  welcome: (msg: string) => void;
+  user_data: (data: string) => void;
 }
 
 export interface ClientToServerEvents {
   hello: (arg: string) => any;
   "chat message": (msg: string) => void;
-  login: (msg: string) => void;
+  login: (username: string) => void;
   pwd: (msg: string) => void;
   register: (msg: string[]) => void;
   create_room: (msg: string) => void;
