@@ -156,20 +156,25 @@ io.on("connection", (socket) => {
       })
 
       .catch((err) => console.log("Promise rejection error: " + err));
-
-
   });
 
   socket.on("get_all_user", async () => {
     const sockets = await io.fetchSockets();
-    let userList:Array<{login: string}> = [];
+    let userList:Array<{}> = [];
+    let unauthentifiedUser:number =0;
     sockets.forEach(e => {
-      userList.push(e.data.login)
+      if(e.data.login !== undefined) {
+        userList.push(e.data.login)
+      } else {
+        unauthentifiedUser += 1;
+      }
     }) 
     socket.emit(
       "system message",
-      "Your connected mates :" + " " + userList
+      "les utilisateurs connectés : " + userList + " il y a aussi " + unauthentifiedUser + " invité(s)."
     );
     console.log(userList)
-  });
+    console.log(unauthentifiedUser)
+  }); 
 })
+
