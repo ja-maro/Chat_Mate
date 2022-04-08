@@ -71,6 +71,14 @@ function read() {
           socket.volatile.emit("get_all_user");
           break;
         }
+        case "--get_rooms": {
+          socket.volatile.emit("get_rooms");
+          break;
+        }
+        case "--get_users_room": {
+          socket.volatile.emit("get_users_room");
+          break;
+        }
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);
           break;
@@ -94,5 +102,8 @@ socket.on("chat message", (msg) => {
 });
 
 socket.on("system message", (msg) => {
+  console.log(colours.fg.green, msg, colours.reset);
+});
+socket.on("smarr", (msg) => {
   console.log(colours.fg.green, msg, colours.reset);
 });

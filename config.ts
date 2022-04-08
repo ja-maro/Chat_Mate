@@ -19,6 +19,7 @@ export interface ServerToClientEvents {
   hello: (msg: string) => void;
   basicEmit: (a: number, b: string, c: Buffer) => void;
   withAck: (d: string, callback: (e: number) => void) => void;
+  smarr: (msg: string[]) => void;
 }
 
 export interface ClientToServerEvents {
@@ -29,6 +30,8 @@ export interface ClientToServerEvents {
   register: (msg: string[]) => void;
   create_room: (msg: string) => void;
   get_all_user: () => void;
+  get_users_room: () => void;
+  get_rooms: () => void;
 }
 
 export interface SocketData {
