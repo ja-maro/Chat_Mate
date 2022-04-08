@@ -146,12 +146,15 @@ io.on("connection", (socket) => {
   });
   
   socket.on("addfriend", async (input) => {
-    const friendCredentials = { friend_id: input[0] };
+    const friendCredentials = { user_login:  input[0], friend_login: input[1] };
     await register(friendCredentials)
       .then((results: any) => {
         socket.data.id = results.insertId;
-        socket.data.friend_id = friendCredentials.friend_id;
+        socket.data.user_login = friendCredentials.user_login;
+        socket.data.friend_login = friendCredentials.friend_login;
       })  
       .catch((err) => console.log("Promise rejection error: " + err));
   });
+
+  socket.on("friendlist", )
 });

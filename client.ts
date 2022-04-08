@@ -81,17 +81,19 @@ export function read() {
 
         //ajouter un user dans sa friendlist
         case "--addfriend" : {
-          let friend: string = input.split(" ")[1];
-          socket.volatile.emit("addfriend", friend);
+          let user_login: string = input.split(" ")[0];
+          let friend_login: string = input.split(" ")[1];
+          socket.volatile.emit("addfriend", user_login, friend_login);
           break;
         }
-        /*case "--friendlist": {
-          let roomName: string = input.split(" ")[1];
-          socket.volatile.emit("friendlist:", friendList);
+        //afficher la liste des amies par à port son login --friendlist <login>
+        //authentication requis pour vérifier si c'est bien le meme login que celui qui la demande
+        case "--friendlist": {
+          let friendlist: string = input.split(" ")[1];
+          socket.volatile.emit("friendlist", friendlist);
           break;         
         }
 
-        }*/
         default: {
           console.log(colours.fg.green, documentation.error, colours.reset);
           break;
