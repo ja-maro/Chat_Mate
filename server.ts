@@ -28,9 +28,9 @@ io.on("connection", (socket) => {
   socket.emit(
     "system message",
     "\n\tBienvenue sur Chat Mate !\n" +
-    "\nTu peux te connecter avec '--login <Login>'\n" +
-    "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
-    "Les espaces ne sont pas acceptés.\n"
+      "\nTu peux te connecter avec '--login <Login>'\n" +
+      "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
+      "Les espaces ne sont pas acceptés.\n"
   );
 
   // Process de la commande --login
@@ -155,59 +155,42 @@ io.on("connection", (socket) => {
   */
   socket.on("join_room", async (input) => {
     let connectedRooms = Array.from(io.of("/").adapter.rooms.keys());
-    if (connectedRooms.includes(input)) {
-
-      await verifyRoom(input)
-        .then((results: any) => {
+    console.log("arr connected rooms : ", connectedRooms);
+    console.log("include input ici : ", input);
+    await verifyRoom(input)
+      .then((results: any) => {
+        if (results[0] == undefined) {
+          socket.emit(
+            "system message",
+            "La room n'existe pas. Utilisez '--create_room' ou '--list_room'"
+          );
+        } else {
           socket.data.room_id = results[0].id;
-          console.log("infos room : ", results[0].id, results[0].room_name)
-        })
-        .catch((err) => console.log("Promise rejection error: " + err));
-      socket
-        .to(socket.data.room_name)
-        .emit(
-          "system message",
-          socket.data.login + " a quitté la room"
-        );
-      socket.leave(socket.data.room_name);
-      socket.join(input);
-      socket.data.room_name = input;
-      socket.emit("system message", "Bienvenue sur " + input);
-      socket.to(input).emit("system message", socket.data.login + " has joined the room.");
-    } else {
-      console.log("else")
-      await verifyRoom(input)
-        .then((results: any) => {
-          if (results[0] == undefined) {
-            socket.emit("system message",
-              "La room n'existe pas. Utilisez '--create_room' ou '--list_room'")
-          } else {
-            socket
-              .to(socket.data.room_name)
-              .emit(
-                "system message",
-                socket.data.login + " a quitté la room"
-              );
-            socket.leave(socket.data.room_name);
-            socket.join(input);
-            socket.data.room_id = results[0].id;
-            socket.data.room_name = input;
-            socket.emit("system message", "Bienvenue sur " + input);
-            socket.to(input).emit("system message", socket.data.login + " has joined the room.");
-          }
-
-        })
-        .catch((err) => console.log("Promise rejection error: " + err));
-
-
-    }
-
-  })
+          socket
+            .to(socket.data.room_name)
+            .emit("system message", socket.data.login + " a quitté la room");
+          socket.leave(socket.data.room_name);
+          socket.join(input);
+          socket.data.room_name = input;
+          socket.emit("system message", "Bienvenue sur " + input);
+          socket
+            .to(input)
+            .emit(
+              "system message",
+              socket.data.login + " has joined the room."
+            );
+        }
+        socket.data.room_id = results[0].id;
+        console.log("room id ici : ", socket.data.room_id);
+        console.log("infos room : ", results[0].id, results[0].room_name);
+      })
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
 });
 
 /**
  * Checks if user is authenticated. If not, sends error message.
- * 
+ *
  * @param socket user socket
  * @returns true if user is authenticated, false if not
  */
