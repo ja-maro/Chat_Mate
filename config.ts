@@ -27,7 +27,7 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   hello: (arg: string) => any;
   "chat message": (msg: string) => void;
-  login: (username: string, password: string) => void;
+  login: (username: string) => void;
   pwd: (msg: string) => void;
   register: (msg: string[]) => void;
   create_room: (msg: string) => void;

@@ -33,16 +33,17 @@ io.on("connection", (socket) => {
   socket.emit(
     "welcome",
     "\n\tBienvenue sur Chat Mate !\n" +
-      "\nTu peux te connecter avec '--login'\n" +
+      "\nTu peux te connecter avec '--login' <login>\n" +
       "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
       "Les espaces ne sont pas acceptés.\n"
   );
 
   // Process de la commande --login
-  socket.on("login", async (input_login, input_pwd) => {
-    const login: string = input_login;
+  socket.on("login", async (input) => {
+    const login: string = input;
     let data = { id: "", user_login: "", user_password: "" };
-    console.log("input login ici : " + input_login);
+    console.log("input login ici : " + input);
+
 
     // On vérifie si l'utilisateur est déjà connecté
     let isConnected = false;
@@ -61,27 +62,39 @@ io.on("connection", (socket) => {
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
-        .then((results: any) => {
-          data.id = results[0].id;
-          data.user_login = results[0].user_login;
-          data.user_password = results[0].user_password;
-          if (input_pwd === data.user_password) {
-            // On stock dans socket data les informations de notre user
-            socket.data.id = data.id;
-            socket.data.login = data.user_login;
-            socket.data.password = data.user_password;
-            welcomeUser(socket);
-          } else {
-            // Si le mot de pass est incorrect on préviens notre user
-            socket.emit(
-              "system message",
-              "C'EST LA PIQUETTE ! T'ES MAUVAIS JACK !"
-            );
-          }
-        })
-        .catch((err) => console.log("Promise rejection error: " + err));
-    }
-  });
+      .then((results: any) => {
+        data.id = results[0].id;
+        data.user_login = results[0].user_login;
+        data.user_password = results[0].user_password;
+      })
+      .catch((err) => console.log("Promise rejection error: " + err));
+
+    // Je check le mot de pass
+    socket.on("pwd", (input) => {
+      if (input === data.user_password) {
+        // On stock dans socket data les informations de notre user
+        socket.data.id = data.id;
+        socket.data.login = data.user_login;
+        socket.data.password = data.user_password;
+
+        welcomeUser(socket);
+      } else {
+        // Si le mot de pass est incorrect on préviens notre user
+        socket.emit(
+          "system message",
+          "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
+        );
+      }
+    });
+
+    // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
+    socket.emit(
+      "system message",
+      "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
+    );
+  }
+});
+
 
   // Permet de s'inscrire
   socket.on("register", async (input) => {

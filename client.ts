@@ -15,15 +15,6 @@ const defaultHost = String(process.env.HOST);
 const defaultPort = Number(process.env.PORT);
 export const rl = readline.createInterface({ input, output, terminal: false });
 
-//to hide password while typing it, we would have to change the way we ask for it, we should
-//have a rl.question() for password, so the response would have a "hideEchoBack: true", which hides it
-// i still don't know how to integrate this here !!!
-//
-
-//hide pasword -- dont forget npm install readline-sync
-var readlineSync = require("readline-sync");
-// ask for username and wait for user's response.
-
 let host: string = "";
 let port: number = 0;
 argv.forEach((value, index) => {
@@ -61,13 +52,16 @@ export function read() {
           break;
         }
         case "--login": {
-          var login = readlineSync.question("login: ", {});
-          var passWord = readlineSync.question("password: ", {
-            hideEchoBack: true, // `*` (default).
-          });
-          socket.volatile.emit("login", login.split(" ")[0], passWord);
+          let login: string = input.split(" ")[1];
+          socket.volatile.emit("login", login);
           break;
         }
+        case "--pwd": {
+          let pwd: string = input.split(" ")[1];
+          socket.volatile.emit("pwd", pwd);
+          break;
+        }
+
         case "--register": {
           let userInfos: string[] = input.split(" ").splice(1, 2);
           socket.volatile.emit("register", userInfos);
