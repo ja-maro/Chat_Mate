@@ -143,5 +143,20 @@ io.on("connection", (socket) => {
       })
 
       .catch((err) => console.log("Promise rejection error: " + err));
+
+
   });
-});
+
+  socket.on("get_all_user", async () => {
+    const sockets = await io.fetchSockets();
+    let userList:Array<{login: string}> = [];
+    sockets.forEach(e => {
+      userList.push(e.data.login)
+    }) 
+    socket.emit(
+      "system message",
+      "Your connected mates :" + " " + userList
+    );
+    console.log(userList)
+  });
+})

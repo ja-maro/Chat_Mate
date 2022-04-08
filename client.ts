@@ -78,6 +78,11 @@ export function read() {
           socket.volatile.emit("create_room", roomName);
           break;
         }
+        case "--get_all_user": {
+          let getUsers: string = input.split(" ")[1];
+          socket.volatile.emit("get_all_user", getUsers);
+          break;
+        }
         /*case "--friendlist": {
           let roomName: string = input.split(" ")[1];
           socket.volatile.emit("friendlist:", friendList);
