@@ -1,7 +1,7 @@
 require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
-import { verifyRoom, createRoom } from "./DataAccess/roomData";
+import { verifyRoom, createRoom, getRooms } from "./DataAccess/roomData";
 import { welcomeUser } from "./welcomeUser";
 // import { rl } from "./client";
 
@@ -33,9 +33,9 @@ io.on("connection", (socket) => {
   socket.emit(
     "welcome",
     "\n\tBienvenue sur Chat Mate !\n" +
-      "\nTu peux te connecter avec '--login' <login>\n" +
-      "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
-      "Les espaces ne sont pas acceptés.\n"
+    "\nTu peux te connecter avec '--login' <login>\n" +
+    "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
+    "Les espaces ne sont pas acceptés.\n"
   );
 
   // Process de la commande --login
@@ -43,7 +43,6 @@ io.on("connection", (socket) => {
     const login: string = input;
     let data = { id: "", user_login: "", user_password: "" };
     console.log("input login ici : " + input);
-
 
     // On vérifie si l'utilisateur est déjà connecté
     let isConnected = false;
@@ -62,39 +61,38 @@ io.on("connection", (socket) => {
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
-      .then((results: any) => {
-        data.id = results[0].id;
-        data.user_login = results[0].user_login;
-        data.user_password = results[0].user_password;
-      })
-      .catch((err) => console.log("Promise rejection error: " + err));
+        .then((results: any) => {
+          data.id = results[0].id;
+          data.user_login = results[0].user_login;
+          data.user_password = results[0].user_password;
+        })
+        .catch((err) => console.log("Promise rejection error: " + err));
 
-    // Je check le mot de pass
-    socket.on("pwd", (input) => {
-      if (input === data.user_password) {
-        // On stock dans socket data les informations de notre user
-        socket.data.id = data.id;
-        socket.data.login = data.user_login;
-        socket.data.password = data.user_password;
+      // Je check le mot de pass
+      socket.on("pwd", (input) => {
+        if (input === data.user_password) {
+          // On stock dans socket data les informations de notre user
+          socket.data.id = data.id;
+          socket.data.login = data.user_login;
+          socket.data.password = data.user_password;
 
-        welcomeUser(socket);
-      } else {
-        // Si le mot de pass est incorrect on préviens notre user
-        socket.emit(
-          "system message",
-          "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
-        );
-      }
-    });
+          welcomeUser(socket);
+        } else {
+          // Si le mot de pass est incorrect on préviens notre user
+          socket.emit(
+            "system message",
+            "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
+          );
+        }
+      });
 
-    // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
-    socket.emit(
-      "system message",
-      "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
-    );
-  }
-});
-
+      // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
+      socket.emit(
+        "system message",
+        "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
+      );
+    }
+  });
 
   // Permet de s'inscrire
   socket.on("register", async (input) => {
@@ -112,16 +110,12 @@ io.on("connection", (socket) => {
   // le user veut créer une room
   // on vérifie qu'elle n'existe pas déjà dans la bdd
   // on le laisse rejoindre la room
-  // S'il est seul comme une merde, on le prévient, parce qu'on est cool.
+  // TODO S'il est seul comme une merde, on le prévient, parce qu'on est cool.
   //  Sinon on génère la liste des users
 
   socket.on("create_room", async (input) => {
     // Si le user n'est pas co, on stop le process
-    if (!socket.data.id) {
-      socket.emit(
-        "system message",
-        "Error : vous devez etre authentifié\t(--login)"
-      );
+    if (!checkAuth(socket)) {
       return;
     }
 
@@ -160,21 +154,90 @@ io.on("connection", (socket) => {
 
   socket.on("get_all_user", async () => {
     const sockets = await io.fetchSockets();
-    let userList:Array<{}> = [];
-    let unauthentifiedUser:number =0;
+    let userList: Array<{}> = [];
+    let unauthentifiedUser: number = 0;
     sockets.forEach(e => {
-      if(e.data.login !== undefined) {
+      if (e.data.login !== undefined) {
         userList.push(e.data.login)
       } else {
         unauthentifiedUser += 1;
       }
-    }) 
+    })
     socket.emit(
       "system message",
       "les utilisateurs connectés : " + userList + " il y a aussi " + unauthentifiedUser + " invité(s)."
     );
     console.log(userList)
     console.log(unauthentifiedUser)
-  }); 
-})
+  });
 
+socket.on("get_rooms", async () => {
+  await getRooms()
+    .then((results: any) => {
+      socket.emit("arr", results);
+    })
+    .catch((err) => console.log("Promise rejection error: " + err));
+});
+
+//JOIN ROOM
+/*
+  --On vérifie si la room est en ligne (au moins un user dedans)
+  --Si oui, join (et leave la précédente)
+  Si non, on vérifie si elle existe en db
+    Si oui, join et on récupère les infos (et leave la précédente)
+    Si non, message d'erreur
+  On lui indique la liste des utilisateurs connectés à la room
+    (message spécial si aucun)
+*/
+socket.on("join_room", async (input) => {
+  let connectedRooms = Array.from(io.of("/").adapter.rooms.keys());
+  console.log("arr connected rooms : ", connectedRooms);
+  console.log("include input ici : ", input);
+  await verifyRoom(input)
+    .then((results: any) => {
+      if (results[0] == undefined) {
+        socket.emit(
+          "system message",
+          "La room n'existe pas. Utilisez '--create_room' ou '--list_room'"
+        );
+      } else {
+        socket.data.room_id = results[0].id;
+        socket
+          .to(socket.data.room_name)
+          .emit("system message", socket.data.login + " a quitté la room");
+        socket.leave(socket.data.room_name);
+        socket.join(input);
+        socket.data.room_name = input;
+        socket.emit("system message", "Bienvenue sur " + input);
+        socket
+          .to(input)
+          .emit(
+            "system message",
+            socket.data.login + " has joined the room."
+          );
+      }
+      socket.data.room_id = results[0].id;
+      console.log("room id ici : ", socket.data.room_id);
+      console.log("infos room : ", results[0].id, results[0].room_name);
+    })
+    .catch((err) => console.log("Promise rejection error: " + err));
+});
+});
+
+/**
+ * Checks if user is authenticated. If not, sends error message.
+ *
+ * @param socket user socket
+ * @returns true if user is authenticated, false if not
+ */
+function checkAuth(socket: any) {
+  if (!socket.data.id) {
+    socket.emit(
+      "system message",
+      "Error : vous devez etre authentifié\t(--login)"
+    );
+    return false;
+  } else {
+    return true;
+  }
+}
