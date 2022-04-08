@@ -155,6 +155,10 @@ io.on("connection", (socket) => {
     sockets.forEach(e => {
       userList.push(e.data.login)
     }) 
+    socket.emit(
+      "system message",
+      "Your connected mates :" + " " + userList
+    );
     console.log(userList)
   });
 })
