@@ -2,6 +2,7 @@ require("dotenv").config();
 import { Server } from "socket.io";
 import { verifyLogin, register } from "./DataAccess/userData";
 import { verifyRoom, createRoom, getRooms } from "./DataAccess/roomData";
+import { saveMessage, historique } from "./DataAccess/messageData";
 import { welcomeUser } from "./welcomeUser";
 // import { rl } from "./client";
 
@@ -18,16 +19,31 @@ let main_room = String(process.env.MAIN_ROOM);
 // Ici on gère les process une fois connecté sur le serveur
 io.on("connection", (socket) => {
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
-  socket.on("chat message", (msg) => {
-    console.log("Mes rooms ! : ", socket.rooms);
+  socket.on("chat message", async (msg) => {
+    // console.log("Mes rooms ! : ", socket.rooms);
 
     console.log("reçu: " + msg);
 
-    // J'essaye de faire en sorte de ne plus afficher deux fois notre log
     // socket.emit("user_data", socket.id);
     socket
       .to(socket.data.room_name)
       .emit("chat message", socket.data.login + " : " + msg);
+
+    if (socket.data.room_id && socket.data.id) {
+      // Changer le stockage de la date en timestamp pour stocker l'heure
+      const message = {
+        user_id: socket.data.id,
+        room_id: socket.data.room_id,
+        content: msg,
+        timestamp: new Date(),
+      };
+      console.log("message ici : ", message.user_id);
+
+      // Stock le message dans la base de donnée
+      await saveMessage(message)
+        .then((res) => console.log(res))
+        .catch((err) => console.log("Promise rejection error: " + err));
+    }
   });
   //On connection to server
   socket.emit(
@@ -211,6 +227,15 @@ io.on("connection", (socket) => {
         console.log("room id ici : ", socket.data.room_id);
         console.log("infos room : ", results[0].id, results[0].room_name);
       })
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
+
+  // Gère l'historique
+  socket.on("hist", async (hist) => {
+    const room_id: any = socket.data.room_id;
+
+    await historique(room_id)
+      .then((res) => console.log(res))
       .catch((err) => console.log("Promise rejection error: " + err));
   });
 });

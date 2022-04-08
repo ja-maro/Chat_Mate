@@ -61,7 +61,6 @@ export function read() {
           socket.volatile.emit("pwd", pwd);
           break;
         }
-
         case "--register": {
           let userInfos: string[] = input.split(" ").splice(1, 2);
           socket.volatile.emit("register", userInfos);
@@ -83,6 +82,11 @@ export function read() {
         }
         case "--get_rooms": {
           socket.volatile.emit("get_rooms");
+          break;
+        }
+        case "--hist": {
+          let roomName: string = input.split(" ")[1];
+          socket.volatile.emit("hist", roomName);
           break;
         }
         default: {

@@ -24,8 +24,8 @@ export interface ServerToClientEvents {
   close_login: () => void;
   welcome: (msg: string) => void;
   user_data: (data: string) => void;
+  hist: (str: string) => void;
 }
-
 
 export interface ClientToServerEvents {
   hello: (arg: string) => any;
@@ -37,6 +37,7 @@ export interface ClientToServerEvents {
   join_room: (msg: string) => void;
   get_all_user: () => void;
   get_rooms: () => void;
+  hist: (str: string) => void;
 }
 
 export interface SocketData {
