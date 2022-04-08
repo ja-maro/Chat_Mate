@@ -42,7 +42,7 @@ export function addfriend(friend: Object) {
 
 //afficher la friendlist; il faut trouver user_id puis SELECT friend_id FROM Friend_list WHERE user_id, puis trouver les user_login correspondant à chaque friend_login q___q
 export function friendlist(friendlist: Object) {
-  const sql = "SELECT friend_id FROM friend_list WHERE (SELECT user_id FROM user WHERE user_login AS ?)";
+  const sql = "SELECT friend_id FROM friend_list WHERE user_id AS (SELECT user_id FROM user WHERE user_login AS ?);";
   return new Promise(function (resolve, reject) {
     connection.query(sql, [friendlist], function (err: any, rows: any) {
       if (rows === undefined) {
