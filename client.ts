@@ -8,6 +8,7 @@ import { colours } from "./colours";
 import * as readline from "node:readline";
 import { argv, stdin as input, stdout as output } from "process";
 import { documentation } from "./documentation";
+import { surprise, choc, carré } from "./surprise";
 require("dotenv").config();
 
 const defaultHost = String(process.env.HOST);
@@ -93,13 +94,30 @@ export function read() {
           socket.volatile.emit("pm", dest, message);
           break;
         }
+        case "--surprise": {
+          socket.volatile.emit("surprise");
+          console.log(surprise)
+          break;
+        }
+        case "--choc": {
+          socket.volatile.emit("choc");
+          console.log(choc)
+          break;
+        }
+        case "--carré": {
+          socket.volatile.emit("carré");
+          console.log(carré)
+          break;
+        }
         default: {
           console.log(colours.fg.red, documentation.error, colours.reset);
           break;
         }
       }
     } else {
-      socket.volatile.emit("chat message", input);
+      if (input.trim() !== "") {
+        socket.volatile.emit("chat message", input);
+      }
     }
     read();
   });

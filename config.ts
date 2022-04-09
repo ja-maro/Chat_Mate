@@ -26,6 +26,9 @@ export interface ServerToClientEvents {
   user_data: (data: string) => void;
   hist: (arr: any, room: string) => void;
   pm: (sender: string, msg: string) => void;
+  surprise: () => void;
+  choc: () => void;
+  carré: () => void;
 }
 
 export interface ClientToServerEvents {
@@ -40,6 +43,9 @@ export interface ClientToServerEvents {
   get_rooms: () => void;
   hist: () => void;
   pm: (dest: string, msg: string) => void;
+  surprise: () => void;
+  choc: () => void;
+  carré: () => void;
 }
 
 export interface SocketData {

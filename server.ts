@@ -4,6 +4,7 @@ import { verifyLogin, register } from "./DataAccess/userData";
 import { verifyRoom, createRoom, getRooms } from "./DataAccess/roomData";
 import { saveMessage, historique } from "./DataAccess/messageData";
 import { welcomeUser } from "./welcomeUser";
+import { surprise, choc, carré } from "./surprise";
 // import { rl } from "./client";
 
 import {
@@ -19,6 +20,17 @@ let main_room = String(process.env.MAIN_ROOM);
 
 // Ici on gère les process une fois connecté sur le serveur
 io.on("connection", (socket) => {
+  // Petite surprise
+  socket.on("surprise", () => {
+    socket.to(socket.data.room_name).emit("chat message", surprise);
+  });
+  socket.on("choc", () => {
+    socket.to(socket.data.room_name).emit("chat message", choc);
+  });
+  socket.on("carré", () => {
+    socket.to(socket.data.room_name).emit("chat message", carré);
+  });
+
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", async (msg) => {
     // console.log("Mes rooms ! : ", socket.rooms);
