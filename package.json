@@ -7,7 +7,7 @@
     "dev": "npx nodemon ./server.ts",
     "dev-client": "npx nodemon ./client.ts",
     "start": "ts-node ./server.ts",
-    "startClient": "ts-node ./client.ts",
+    "start-client": "ts-node ./client.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
