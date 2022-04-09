@@ -19,7 +19,7 @@ export const documentation = {
     "\nlogin" +
     colours.reset +
     " <login>" +
-    "\t\ts'authentifier" +
+    "\t\t\ts'authentifier" +
     colours.bright +
     "\nregister" +
     colours.reset +
@@ -34,19 +34,19 @@ export const documentation = {
     "\ncreate_room" +
     colours.reset +
     " <nom de room>" +
-    "\t\tcréer une nouvelle room" +
+    "\tcréer une nouvelle room" +
     colours.bright +
     "\nget_rooms" +
     colours.reset +
-    "\t\tafficher la liste des rooms" +
+    "\t\t\tafficher la liste des rooms" +
     colours.bright +
     "\nget_users" +
     colours.reset +
-    "\t\tafficher la liste des utilisateurs connectés" +
+    "\t\t\tafficher la liste des utilisateurs connectés" +
     colours.bright +
     "\nhist" +
     colours.reset +
-    "\t\tafficher la liste des messages envoyés dans le room",
+    "\t\t\t\tafficher la liste des messages envoyés dans la room",
   error:
-    "This command doesn't exit.\n Refer yourself to our documentation for more informations with the command : --help",
+    "Cette commande n'existe pas.\n Référez-vous à notre manuel pour plus d'informations, à l'aide de : " + colours.bright + "--help",
 };

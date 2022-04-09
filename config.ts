@@ -38,7 +38,7 @@ export interface ClientToServerEvents {
   join_room: (msg: string) => void;
   get_all_user: () => void;
   get_rooms: () => void;
-  hist: (str: string) => void;
+  hist: () => void;
   pm: (dest: string, msg: string) => void;
 }
 

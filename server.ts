@@ -198,26 +198,36 @@ io.on("connection", (socket) => {
     const sockets = await io.fetchSockets();
     let userList: Array<{}> = [];
     let unauthentifiedUser: number = 0;
-    sockets.forEach(e => {
+    sockets.forEach((e) => {
       if (e.data.login !== undefined) {
-        userList.push(e.data.login)
+        userList.push(e.data.login);
       } else {
         unauthentifiedUser += 1;
       }
-    })
+    });
     socket.emit(
       "system message",
-      "les utilisateurs connectés : " + userList + " il y a aussi " + unauthentifiedUser + " invité(s)."
+      "Utilisateurs connectés : " +
+        colours.bright +
+        userList +
+        colours.reset +
+        colours.fg.green +
+        "\nIl y a aussi " +
+        colours.bright +
+        unauthentifiedUser +
+        colours.reset +
+        colours.fg.green +
+        " invité(s)."
     );
   });
 
-socket.on("get_rooms", async () => {
-  await getRooms()
-    .then((results: any) => {
-      socket.emit("arr", results);
-    })
-    .catch((err) => console.log("Promise rejection error: " + err));
-});
+  socket.on("get_rooms", async () => {
+    await getRooms()
+      .then((results: any) => {
+        socket.emit("arr", results);
+      })
+      .catch((err) => console.log("Promise rejection error: " + err));
+  });
 
   //JOIN ROOM
   socket.on("join_room", async (input) => {
@@ -252,7 +262,7 @@ socket.on("get_rooms", async () => {
   });
 
   // Gère l'historique
-  socket.on("hist", async (hist) => {
+  socket.on("hist", async () => {
     const room_id: any = socket.data.room_id;
 
     await historique(room_id)
