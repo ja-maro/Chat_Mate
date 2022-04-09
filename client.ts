@@ -56,7 +56,7 @@ export function read() {
           socket.volatile.emit("login", login);
           break;
         }
-        case "--pwd": {
+        case "--pass": {
           let pwd: string = input.split(" ")[1];
           socket.volatile.emit("pwd", pwd);
           break;
@@ -76,7 +76,7 @@ export function read() {
           socket.volatile.emit("join_room", roomName);
           break;
         }
-        case "--get_all_user": {
+        case "--get_users": {
           socket.volatile.emit("get_all_user");
           break;
         }
@@ -87,6 +87,13 @@ export function read() {
         case "--hist": {
           let roomName: string = input.split(" ")[1];
           socket.volatile.emit("hist", roomName);
+          break;
+        }
+        case "--pm": {
+          let dest: string = input.split(" ")[1];
+          let tempMsg: string = input.substring(input.indexOf(" ") + 1);
+          let message: string = tempMsg.substring(tempMsg.indexOf(" ") + 1);
+          socket.volatile.emit("pm", dest, message);
           break;
         }
         default: {
@@ -151,4 +158,67 @@ socket.on("arr", (msg) => {
     output.write("‾");
   }
   console.log("");
+});
+
+socket.on("hist", (msg, room_name) => {
+  console.log(
+    colours.fg.magenta + "HISTORIQUE ROOM : " + room_name + colours.reset
+  );
+
+  if (msg[0] == null) {
+    console.log(
+      colours.fg.red +
+        "Oups ! Personne n'a parlé dans cette room ! :'( " +
+        colours.reset
+    );
+  } else {
+    let msgArr: Array<any>;
+    let length: number = 0;
+    msg.forEach((e: any) => {
+      length =
+        length < e.user_login.length + e.content.length
+          ? e.user_login.length + e.content.length
+          : length;
+      // console.log(colours.fg.green, e.room_name, colours.reset);
+    });
+    output.write(colours.fg.magenta);
+    output.write(" ");
+    for (let i = 0; i < length + 7; i++) {
+      output.write("_");
+    }
+    console.log("");
+    msg.forEach((e: any) => {
+      output.write("|  ");
+      output.write(e.user_login);
+      output.write(" : ");
+      output.write(e.content);
+      for (
+        let i = 0;
+        i < length - (e.user_login.length + e.content.length);
+        i++
+      ) {
+        output.write(" ");
+      }
+      output.write("  |\n");
+    });
+    output.write(" ");
+    for (let i = 0; i < length + 7; i++) {
+      output.write("‾");
+    }
+    console.log(colours.reset);
+  }
+});
+
+socket.on("pm", (sender, msg) => {
+  console.log(
+    colours.fg.cyan +
+      colours.bright +
+      "(PM) " +
+      sender +
+      " : " +
+      colours.reset +
+      colours.fg.cyan +
+      msg +
+      colours.reset
+  );
 });

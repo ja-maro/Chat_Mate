@@ -24,7 +24,8 @@ export interface ServerToClientEvents {
   close_login: () => void;
   welcome: (msg: string) => void;
   user_data: (data: string) => void;
-  hist: (str: string) => void;
+  hist: (arr: any, room: string) => void;
+  pm: (sender: string, msg: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -38,6 +39,7 @@ export interface ClientToServerEvents {
   get_all_user: () => void;
   get_rooms: () => void;
   hist: (str: string) => void;
+  pm: (dest: string, msg: string) => void;
 }
 
 export interface SocketData {

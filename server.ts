@@ -12,6 +12,7 @@ import {
   SocketData,
   io,
 } from "./config";
+import { colours } from "./colours";
 
 // Variable utilisée pour gérer notre room par défaut
 let main_room = String(process.env.MAIN_ROOM);
@@ -21,8 +22,6 @@ io.on("connection", (socket) => {
   // Permet d'afficher les messages dans notre chat avec le nom d'utilisateur
   socket.on("chat message", async (msg) => {
     // console.log("Mes rooms ! : ", socket.rooms);
-
-    console.log("reçu: " + msg);
 
     // socket.emit("user_data", socket.id);
     socket
@@ -37,7 +36,6 @@ io.on("connection", (socket) => {
         content: msg,
         timestamp: new Date(),
       };
-      console.log("message ici : ", message.user_id);
 
       // Stock le message dans la base de donnée
       await saveMessage(message)
@@ -48,10 +46,21 @@ io.on("connection", (socket) => {
   //On connection to server
   socket.emit(
     "welcome",
-    "\n\tBienvenue sur Chat Mate !\n" +
-      "\nTu peux te connecter avec '--login' <login>\n" +
-      "Tu peux également t'inscrire avec '--register <Login> <Password>'\n" +
-      "Les espaces ne sont pas acceptés.\n"
+    colours.bright +
+      "\n\tBienvenue sur Chat Mate !\n" +
+      colours.reset +
+      colours.fg.green +
+      "\nPour commencer à chater, connecte toi avec" +
+      colours.bright +
+      "'--login' <login>\n" +
+      colours.reset +
+      colours.fg.green +
+      "Tu peux t'inscrire avec " +
+      colours.bright +
+      "'--register <Login> <Password>'\n" +
+      colours.reset +
+      colours.fg.green +
+      "Attention ! Les espaces ne sont pas acceptés.\n"
   );
 
   // Process de la commande --login
@@ -69,11 +78,14 @@ io.on("connection", (socket) => {
         isConnected = true;
       }
     });
-
     // Si l'user est déjà connecté on stop le process
     if (isConnected) {
-      socket.emit("system message", "This user is already logged in");
-      // socket.emit("close_login");
+      socket.emit(
+        "system message",
+        colours.reset +
+          colours.fg.red +
+          "Petit tricheur ! Cet utilisateur est déjà connecté !"
+      );
     } else {
       // On vérifie si le login existe dans la db
       await verifyLogin(login)
@@ -97,7 +109,7 @@ io.on("connection", (socket) => {
           // Si le mot de pass est incorrect on préviens notre user
           socket.emit(
             "system message",
-            "T'es MAUVAIS JACK ! LA PIQUETTE JACK !"
+            colours.reset + colours.fg.red + "Mauvais login / mot de passe"
           );
         }
       });
@@ -105,7 +117,26 @@ io.on("connection", (socket) => {
       // On demande à l'utilisateur de nous fournir son mdp à l'aide de notre commande
       socket.emit(
         "system message",
-        "Entre ton mot de passe avec '--pwd <votre mot de passe>'\nLes espaces ne sont pas acceptés."
+        "Entre ton mot de passe avec '--pass <votre mot de passe>'\n"
+      );
+    }
+  });
+
+  socket.on("pm", (dest, msg) => {
+    let sender = socket.data.login;
+    let isConnected = false;
+    let connectedSockets = Array.from(io.of("/").adapter.sids.keys());
+    connectedSockets.forEach((e) => {
+      let s: any = io.sockets.sockets.get(e);
+      if (s.data.login === dest) {
+        isConnected = true;
+        s.emit("pm", sender, msg);
+      }
+    });
+    if (isConnected == false) {
+      socket.emit(
+        "system message",
+        colours.reset + colours.fg.red + "Cet utilisateur n'est pas connecté"
       );
     }
   });
@@ -123,22 +154,14 @@ io.on("connection", (socket) => {
       .catch((err) => console.log("Promise rejection error: " + err));
   });
 
-  // le user veut créer une room
-  // on vérifie qu'elle n'existe pas déjà dans la bdd
-  // on le laisse rejoindre la room
-  // TODO S'il est seul comme une merde, on le prévient, parce qu'on est cool.
-  //  Sinon on génère la liste des users
-
   socket.on("create_room", async (input) => {
     // Si le user n'est pas co, on stop le process
     if (!checkAuth(socket)) {
       return;
     }
 
-    console.log("input de create_room ici : " + input);
     await verifyRoom(input)
       .then((results: any) => {
-        console.log("verifyRoom results : " + JSON.stringify(results[0]));
         if (results[0] == undefined) {
           // créer room ici en prenant l 'input et le user
           createRoom(input, socket.data.id)
@@ -161,7 +184,10 @@ io.on("connection", (socket) => {
             })
             .catch((err) => console.log("Promise rejection error: " + err));
         } else {
-          socket.emit("system message", "Cette room existe déjà.\n");
+          socket.emit(
+            "system message",
+            colours.reset + colours.fg.red + "Cette room existe déjà.\n"
+          );
         }
       })
 
@@ -174,7 +200,10 @@ io.on("connection", (socket) => {
     sockets.forEach((e) => {
       userList.push(e.data.login);
     });
-    socket.emit("system message", "Your connected mates :" + " " + userList);
+    socket.emit(
+      "system message",
+      "Les utilisateurs dans cette room :" + " " + userList
+    );
     console.log(userList);
   });
 
@@ -187,25 +216,16 @@ io.on("connection", (socket) => {
   });
 
   //JOIN ROOM
-  /*
-    --On vérifie si la room est en ligne (au moins un user dedans)
-    --Si oui, join (et leave la précédente)
-    Si non, on vérifie si elle existe en db
-      Si oui, join et on récupère les infos (et leave la précédente)
-      Si non, message d'erreur
-    On lui indique la liste des utilisateurs connectés à la room
-      (message spécial si aucun)
-  */
   socket.on("join_room", async (input) => {
     let connectedRooms = Array.from(io.of("/").adapter.rooms.keys());
-    console.log("arr connected rooms : ", connectedRooms);
-    console.log("include input ici : ", input);
     await verifyRoom(input)
       .then((results: any) => {
         if (results[0] == undefined) {
           socket.emit(
             "system message",
-            "La room n'existe pas. Utilisez '--create_room' ou '--list_room'"
+            colours.reset +
+              colours.fg.red +
+              "La room n'existe pas. Utilisez '--create_room' ou '--list_room'"
           );
         } else {
           socket.data.room_id = results[0].id;
@@ -218,10 +238,7 @@ io.on("connection", (socket) => {
           socket.emit("system message", "Bienvenue sur " + input);
           socket
             .to(input)
-            .emit(
-              "system message",
-              socket.data.login + " has joined the room."
-            );
+            .emit("system message", socket.data.login + " a rejoint la room.");
         }
         socket.data.room_id = results[0].id;
         console.log("room id ici : ", socket.data.room_id);
@@ -235,7 +252,9 @@ io.on("connection", (socket) => {
     const room_id: any = socket.data.room_id;
 
     await historique(room_id)
-      .then((res) => console.log(res))
+      .then((res) => {
+        socket.emit("hist", res, socket.data.room_name);
+      })
       .catch((err) => console.log("Promise rejection error: " + err));
   });
 });
@@ -250,7 +269,9 @@ function checkAuth(socket: any) {
   if (!socket.data.id) {
     socket.emit(
       "system message",
-      "Error : vous devez etre authentifié\t(--login)"
+      colours.reset +
+        colours.fg.red +
+        "Error : Vous devez etre authentifié\t(--login)"
     );
     return false;
   } else {

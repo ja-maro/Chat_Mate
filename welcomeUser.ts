@@ -7,7 +7,7 @@ let main_room = String(process.env.MAIN_ROOM);
 export const welcomeUser = (socket: any) => {
   // On accueil l'utilisateur connecté
   socket.emit("system message", "Bienvenue " + socket.data.login);
-  socket.emit("hello", "===START_CHATING===");
+  socket.emit("hello", "===START CHATING===");
 
   // On fait rejoindre la room par defaut à notre user
   socket.join(main_room);
@@ -15,7 +15,7 @@ export const welcomeUser = (socket: any) => {
   socket.data.room_id = 1;
   socket
     .to(main_room)
-    .emit("system message", socket.data.login + " has joined the room.");
+    .emit("system message", socket.data.login + " a rejoint la room.");
 
   //Récupère la liste des rooms actuellement sur le serveur
   let rooms: string[] = Array.from(io.of("/").adapter.rooms.keys());
