@@ -29,11 +29,15 @@ export function register(credentials: Object) {
 //fournir user_login friend_login dans Friend_list;
 //je ne sais pas comment intégrer le user_login qui est attaché à socket.data.id, ici. 
 //il faut corriger le query sql
-export function addfriend(friend: Object) {
+export function addfriend(friend: string, user_id: any) {
   //const user_id = socket.data.id; 
-  const sql = "INSERT INTO Friend_list(user_id, friend_id) VALUES (user_id, (SELECT user_id FROM user WHERE user_login=${friend_login}));";
+  const sql_friend_id = "SELECT user_id FROM user WHERE user_login='?'";
+  const sql_friend_list = "INSERT INTO Friend_list(user_id, friend_id) VALUES (${user_id}, ${sql_friend_id});";
   return new Promise(function (resolve, reject) {
-    connection.query(sql, [friend], function (err: any, rows: any) {
+    connection.query(
+      sql_friend_id, [friend], 
+      sql_friend_list, [user_id],
+      function (err: any, rows: any) {
       if (rows === undefined) {
         reject(new Error("Error rows is undefined"));
       } else {
@@ -45,7 +49,7 @@ export function addfriend(friend: Object) {
 
 //encore je ne sais pas comment intégrer le user_login qui est attaché à socket.data.id, ici. 
 export function removefriend(friend: Object) {
-  const sql = "DELETE FROM Friend_list(user_id, friend_id) WHERE user_id=user_id AND friend_id LIKE (SELECT user_id FROM user WHERE user_login=${friend_login});";
+  const sql = "DELETE FROM Friend_list(user_id, friend_id) WHERE user_id=user_id AND friend_id LIKE (SELECT user_id FROM user WHERE ?);";
   return new Promise(function (resolve, reject) {
     connection.query(sql, [friend], function (err: any, rows: any) {
       if (rows === undefined) {
@@ -60,8 +64,8 @@ export function removefriend(friend: Object) {
 //afficher la friendlist; 
 //il faut corriger le query sql
 export function friendlist(friendlist: Object) {
-  //encore je ne sais pas comment intégrer le user_login qui est attaché à socket.data.id, ici. 
-  const sql = "SELECT (SELECT user_id FROM user WHERE user_login='${friend_login}') FROM Friend_list WHERE user_id='user_id';";
+  //encore je ne sais pas comment intégrer ici le user_login qui est attaché à socket.data.id. 
+  const sql = "SELECT (SELECT user_id FROM user WHERE ?) FROM Friend_list WHERE user_id='user_id';";
   return new Promise(function (resolve, reject) {
     connection.query(sql, [friendlist], function (err: any, rows: any) {
       if (rows === undefined) {
