@@ -196,24 +196,28 @@ io.on("connection", (socket) => {
 
   socket.on("get_all_user", async () => {
     const sockets = await io.fetchSockets();
-    let userList: Array<{ login: string }> = [];
-    sockets.forEach((e) => {
-      userList.push(e.data.login);
-    });
+    let userList: Array<{}> = [];
+    let unauthentifiedUser: number = 0;
+    sockets.forEach(e => {
+      if (e.data.login !== undefined) {
+        userList.push(e.data.login)
+      } else {
+        unauthentifiedUser += 1;
+      }
+    })
     socket.emit(
       "system message",
-      "Les utilisateurs dans cette room :" + " " + userList
+      "les utilisateurs connectés : " + userList + " il y a aussi " + unauthentifiedUser + " invité(s)."
     );
-    console.log(userList);
   });
 
-  socket.on("get_rooms", async () => {
-    await getRooms()
-      .then((results: any) => {
-        socket.emit("arr", results);
-      })
-      .catch((err) => console.log("Promise rejection error: " + err));
-  });
+socket.on("get_rooms", async () => {
+  await getRooms()
+    .then((results: any) => {
+      socket.emit("arr", results);
+    })
+    .catch((err) => console.log("Promise rejection error: " + err));
+});
 
   //JOIN ROOM
   socket.on("join_room", async (input) => {
